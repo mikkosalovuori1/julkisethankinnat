@@ -2,72 +2,136 @@
 <html lang="fi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>Päättyvät sopimukset</title>
 
 <style>
-body {background:#0a0e1a;color:white;font-family:Arial;}
-.wrap{max-width:1200px;margin:auto;padding:20px;}
-.card{background:#111827;padding:14px;margin-bottom:10px;border-radius:10px;}
-.badge{background:red;padding:4px 8px;border-radius:999px;}
+body { background:#0a0e1a; color:white; font-family:Arial; margin:0; }
+.wrap { max-width:1200px; margin:auto; padding:24px; }
+.card { background:#111827; padding:14px; margin-bottom:12px; border-radius:10px; border:1px solid #1f2937; }
+.badge { background:#dc2626; padding:4px 8px; border-radius:999px; font-size:12px; }
+.badge-soft { background:#7c3aed; padding:4px 8px; border-radius:999px; font-size:12px; }
+.muted { color:#94a3b8; font-size:13px; }
+.tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
+.theme { background:#0f766e; }
+.signal { background:#7c3aed; }
+input, button {
+  padding:10px; border-radius:10px;
+  border:1px solid #1f2937;
+  background:#111827; color:white;
+}
+button { background:#2563eb; cursor:pointer; }
 </style>
 </head>
 
 <body>
 <div class="wrap">
-<h1>⏳ Päättyvät sopimukset</h1>
+  <h1>⏳ Päättyvät sopimukset</h1>
 
-<input id="days" placeholder="päivää (esim. 90)" value="90">
-<button onclick="draw()">Hae</button>
+  <div style="margin-bottom:16px;">
+    <input id="days" placeholder="päivää (esim. 90)" value="90">
+    <button id="searchBtn">Hae</button>
+  </div>
 
-<div id="results"></div>
+  <div id="results"></div>
 </div>
 
 <script>
 function parseDate(d){
- if(!d) return null;
- if(d.includes(".")){
-   const [day,month,year]=d.split(".");
-   return new Date(year,month-1,day);
- }
- return new Date(d);
+  if(!d) return null;
+  if(String(d).includes(".")){
+    const [day, month, year] = String(d).split(".");
+    return new Date(year, month - 1, day);
+  }
+  const parsed = new Date(d);
+  return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-let data=[];
+function esc(v){
+  return String(v || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
 
-fetch('./data/procurements.json?v='+Date.now())
-.then(r=>r.json())
-.then(d=>{
- data=d;
- draw();
+let data = [];
+
+fetch('./data/procurements.json?v=' + Date.now())
+.then(r => r.json())
+.then(d => {
+  data = d;
+  draw();
 });
 
 function draw(){
+  const days = parseInt(document.getElementById("days").value || 90, 10);
+  const now = new Date();
 
- const days = parseInt(document.getElementById("days").value||90);
+  const filtered = data.filter(i => {
+    const hasSignals =
+      (i.item_type || "").toLowerCase().includes("sopimus") ||
+      (i.signal_tags || []).includes("sopimus päättymässä") ||
+      (i.signal_tags || []).includes("uusintahankinta") ||
+      (i.search_text || "").includes("sopimus") ||
+      (i.search_text || "").includes("voimassa") ||
+      (i.search_text || "").includes("päättyy");
 
- const now = new Date();
+    if(i.contract_end_date){
+      const d = parseDate(i.contract_end_date);
+      if(!d) return false;
+      const diff = (d - now) / (1000 * 60 * 60 * 24);
+      return diff > 0 && diff < days;
+    }
 
- const filtered = data.filter(i=>{
-   if(!i.contract_end_date) return false;
-   const d = parseDate(i.contract_end_date);
-   if(!d) return false;
+    return hasSignals;
+  });
 
-   const diff = (d-now)/(1000*60*60*24);
+  document.getElementById("results").innerHTML = filtered.map(i => `
+    <div class="card">
+      <div>
+        <b>${esc(i.entity)}</b>
+        ${i.contract_end_date
+          ? '<span class="badge">PÄÄTTYMÄSSÄ</span>'
+          : '<span class="badge-soft">SOPIMUSVIHJE</span>'}
+      </div>
 
-   return diff > 0 && diff < days;
- });
+      <div style="margin-top:6px; font-weight:bold;">${esc(i.title)}</div>
 
- document.getElementById("results").innerHTML =
- filtered.map(i=>`
- <div class="card">
-   <b>${i.entity}</b> <span class="badge">PÄÄTTYMÄSSÄ</span>
-   <div>${i.title}</div>
-   <div>📅 ${i.contract_end_date}</div>
-   <a href="${i.url}" target="_blank">Avaa</a>
- </div>
- `).join("");
+      <div class="muted" style="margin-top:6px;">
+        Tyyppi: ${esc(i.item_type || '-')}
+      </div>
 
+      <div class="muted" style="margin-top:4px;">
+        Päättymispäivä: ${esc(i.contract_end_date || 'ei tunnistettu vielä')}
+      </div>
+
+      ${(i.theme_tags || []).length ? `
+        <div style="margin-top:8px;">
+          ${(i.theme_tags || []).map(t => `<span class="tag theme">${esc(t)}</span>`).join('')}
+        </div>
+      ` : ''}
+
+      ${(i.signal_tags || []).length ? `
+        <div style="margin-top:8px;">
+          ${(i.signal_tags || []).map(t => `<span class="tag signal">${esc(t)}</span>`).join('')}
+        </div>
+      ` : ''}
+
+      <div style="margin-top:10px;">
+        <a href="${esc(i.url)}" target="_blank">Avaa</a>
+        ${i.document_url ? ` | <a href="${esc(i.document_url)}" target="_blank">PDF</a>` : ''}
+      </div>
+    </div>
+  `).join("");
 }
+
+document.getElementById("searchBtn").onclick = draw;
 </script>
 </body>
 </html>
