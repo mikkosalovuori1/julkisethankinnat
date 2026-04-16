@@ -1,20 +1,51 @@
 [
-  {
-    "name": "Akaan kaupunki",
-    "urls": [
-      "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/"
-    ]
-  },
-  {
-    "name": "Espoon kaupunki",
-    "urls": [
-      "https://www.espoo.fi/fi/hankinnat"
-    ]
-  },
-  {
-    "name": "Oulun kaupunki",
-    "urls": [
-      "https://www.ouka.fi/hankinnat"
-    ]
-  }
+  { "name": "Helsingin kaupunki", "urls": ["https://www.hel.fi/fi/paatoksenteko-ja-hallinto/hankinnat"] },
+  { "name": "Espoon kaupunki", "urls": ["https://www.espoo.fi/fi/hankinnat"] },
+  { "name": "Vantaan kaupunki", "urls": ["https://www.vantaa.fi/fi/hankinnat"] },
+  { "name": "Tampereen kaupunki", "urls": ["https://www.tampere.fi/organisaatio/hankinnat"] },
+  { "name": "Turun kaupunki", "urls": ["https://www.turku.fi/hankinnat"] },
+  { "name": "Oulun kaupunki", "urls": ["https://www.ouka.fi/hankinnat"] },
+  { "name": "Jyväskylän kaupunki", "urls": ["https://www.jyvaskyla.fi/hankinnat"] },
+  { "name": "Kuopion kaupunki", "urls": ["https://www.kuopio.fi/hankinnat"] },
+  { "name": "Lahden kaupunki", "urls": ["https://www.lahti.fi/kaupunki-ja-paatoksenteko/hankinnat/"] },
+  { "name": "Porin kaupunki", "urls": ["https://www.pori.fi/hankinnat"] },
+  { "name": "Kouvolan kaupunki", "urls": ["https://www.kouvola.fi/hankinnat"] },
+  { "name": "Joensuun kaupunki", "urls": ["https://www.joensuu.fi/hankinnat"] },
+  { "name": "Lappeenrannan kaupunki", "urls": ["https://www.lappeenranta.fi/hankinnat"] },
+  { "name": "Hämeenlinnan kaupunki", "urls": ["https://www.hameenlinna.fi/kaupunki-ja-hallinto/hankinnat/"] },
+  { "name": "Vaasan kaupunki", "urls": ["https://www.vaasa.fi/hankinnat/"] },
+  { "name": "Seinäjoen kaupunki", "urls": ["https://www.seinajoki.fi/hankinnat/"] },
+  { "name": "Rovaniemen kaupunki", "urls": ["https://www.rovaniemi.fi/hankinnat"] },
+  { "name": "Mikkelin kaupunki", "urls": ["https://www.mikkeli.fi/hankinnat"] },
+  { "name": "Kotkan kaupunki", "urls": ["https://www.kotka.fi/kaupunki-ja-hallinto/hankinnat/"] },
+  { "name": "Porvoon kaupunki", "urls": ["https://www.porvoo.fi/hankinnat"] },
+  { "name": "Hyvinkään kaupunki", "urls": ["https://www.hyvinkaa.fi/kaupunki-ja-hallinto/hankinnat/"] },
+  { "name": "Järvenpään kaupunki", "urls": ["https://www.jarvenpaa.fi/hankinnat"] },
+  { "name": "Rauman kaupunki", "urls": ["https://www.rauma.fi/hankinnat"] },
+  { "name": "Kajaanin kaupunki", "urls": ["https://www.kajaani.fi/hankinnat"] },
+  { "name": "Kokkolan kaupunki", "urls": ["https://www.kokkola.fi/hankinnat"] },
+  { "name": "Salon kaupunki", "urls": ["https://salo.fi/kaupunki-ja-paatoksenteko/hankinnat/"] },
+  { "name": "Savonlinnan kaupunki", "urls": ["https://www.savonlinna.fi/hankinnat"] },
+  { "name": "Kemin kaupunki", "urls": ["https://www.kemi.fi/hankinnat"] },
+  { "name": "Iisalmen kaupunki", "urls": ["https://www.iisalmi.fi/hankinnat"] },
+  { "name": "Raahen kaupunki", "urls": ["https://www.raahe.fi/hankinnat"] },
+  { "name": "Ylöjärven kaupunki", "urls": ["https://www.ylojarvi.fi/hankinnat"] },
+  { "name": "Nokian kaupunki", "urls": ["https://www.nokiankaupunki.fi/hankinnat"] },
+  { "name": "Keravan kaupunki", "urls": ["https://www.kerava.fi/hankinnat"] },
+  { "name": "Kaarinan kaupunki", "urls": ["https://www.kaarina.fi/hankinnat"] },
+  { "name": "Riihimäen kaupunki", "urls": ["https://www.riihimaki.fi/hankinnat"] },
+  { "name": "Lohjan kaupunki", "urls": ["https://www.lohja.fi/hankinnat"] },
+  { "name": "Tuusulan kunta", "urls": ["https://www.tuusula.fi/hankinnat"] },
+  { "name": "Kirkkonummen kunta", "urls": ["https://www.kirkkonummi.fi/hankinnat"] },
+  { "name": "Sipoon kunta", "urls": ["https://www.sipoo.fi/hankinnat"] },
+  { "name": "Lempäälän kunta", "urls": ["https://www.lempaala.fi/hankinnat"] },
+  { "name": "Kangasalan kaupunki", "urls": ["https://www.kangasala.fi/hankinnat"] },
+  { "name": "Pirkkalan kunta", "urls": ["https://www.pirkkala.fi/hankinnat"] },
+  { "name": "Valkeakosken kaupunki", "urls": ["https://www.valkeakoski.fi/hankinnat"] },
+  { "name": "Forssan kaupunki", "urls": ["https://www.forssa.fi/hankinnat"] },
+  { "name": "Imatran kaupunki", "urls": ["https://www.imatra.fi/hankinnat"] },
+  { "name": "Sastamalan kaupunki", "urls": ["https://www.sastamala.fi/hankinnat"] },
+  { "name": "Naantalin kaupunki", "urls": ["https://www.naantali.fi/hankinnat"] },
+  { "name": "Raision kaupunki", "urls": ["https://www.raisio.fi/hankinnat"] },
+  { "name": "Akaan kaupunki", "urls": ["https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/"] }
 ]
