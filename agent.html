@@ -3,41 +3,165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI-agentti v6</title>
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <title>Hankinta-agentti</title>
+
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#0a0e1a; color:#e5e7eb; }
-    .wrap { max-width:1100px; margin:0 auto; padding:32px 20px; }
-    .panel { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; margin-bottom:16px; }
-    textarea, button { width:100%; padding:14px; border-radius:12px; border:1px solid #1f2937; background:#111827; color:#e5e7eb; }
-    button { background:#2563eb; color:white; cursor:pointer; margin-top:10px; }
-    .answer { white-space:pre-wrap; line-height:1.6; }
+    .wrap { max-width:1200px; margin:0 auto; padding:32px 20px; }
+    .panel {
+      background:#111827;
+      border:1px solid #1f2937;
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:16px;
+    }
+    textarea, input, button {
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid #1f2937;
+      background:#111827;
+      color:#e5e7eb;
+      box-sizing:border-box;
+    }
+    button {
+      background:#2563eb;
+      color:white;
+      cursor:pointer;
+      margin-top:10px;
+      width:auto;
+      padding:10px 14px;
+    }
+    .row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+    .row > div {
+      flex:1;
+      min-width:220px;
+    }
+    .answer {
+      white-space:normal;
+      line-height:1.6;
+    }
+    .result-card {
+      background:#0f172a;
+      border:1px solid #1f2937;
+      border-radius:14px;
+      padding:14px;
+      margin-top:14px;
+    }
+    .muted {
+      color:#94a3b8;
+      font-size:13px;
+    }
+    .tag {
+      display:inline-block;
+      background:#1f2937;
+      color:#cbd5e1;
+      padding:4px 8px;
+      border-radius:999px;
+      margin:4px 6px 0 0;
+      font-size:12px;
+    }
+    .theme { background:#0f766e; color:white; }
+    .signal { background:#7c3aed; color:white; }
+    .profile-btn {
+      display:inline-block;
+      background:#1d4ed8;
+      color:white;
+      border:none;
+      padding:8px 12px;
+      border-radius:999px;
+      margin:4px 8px 4px 0;
+      cursor:pointer;
+    }
+    .delete-btn {
+      background:#991b1b;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      border-radius:999px;
+      margin-left:8px;
+      cursor:pointer;
+    }
+    mark {
+      background:#facc15;
+      color:#111827;
+      padding:0 2px;
+      border-radius:4px;
+    }
+    a { color:#60a5fa; }
+    .section-title {
+      font-size:12px;
+      color:#94a3b8;
+      margin-top:10px;
+      margin-bottom:4px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Hankinta-agentti v6</h1>
+    <h1>Hankinta-agentti 🤖</h1>
+
     <div class="panel">
       <div>Kysy esimerkiksi:</div>
       <ul>
-        <li>näytä kaikki it-hankinnat</li>
-        <li>etsi maisemasuunnitteluun liittyvät hankinnat</li>
-        <li>mitkä ovat uudet hankinnat Helsingissä</li>
-        <li>näytä budjetit tai investointipäätökset</li>
-        <li>mitä PDF-sisällöissä kerrotaan rakentamisesta</li>
+        <li>keittiösuunnittelu</li>
+        <li>etsi kaikki kulunvalvontaan liittyvät hankinnat</li>
+        <li>mitä PDF:issä sanotaan maisemasuunnittelusta</li>
+        <li>näytä budjetoidut it-hankinnat</li>
+        <li>mitkä sopimukset päättyvät ja liittyvät siivoukseen</li>
       </ul>
     </div>
 
     <div class="panel">
-      <textarea id="question" rows="4" placeholder="Kirjoita kysymys hankinnoista..."></textarea>
-      <button id="askBtn">Analysoi</button>
+      <div class="row">
+        <div style="flex:2; min-width:280px;">
+          <label class="muted">Kysy agentilta</label>
+          <textarea id="question" rows="4" placeholder="Kirjoita hakusana tai kysymys, esim. keittiösuunnittelu"></textarea>
+        </div>
+        <div>
+          <label class="muted">Tallenna hakuprofiiliksi</label>
+          <input id="profileName" placeholder="Esim. Keittiösuunnittelu" />
+          <button id="saveProfileBtn">Tallenna profiili</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button id="askBtn">Hae tiedot</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-title">Hakuprofiilit</div>
+      <div id="profiles">Ei profiileja vielä.</div>
     </div>
 
     <div class="panel answer" id="answer">Valmis kysymyksille.</div>
+    <div id="results"></div>
   </div>
 
   <script>
+    function esc(v) {
+      return String(v || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
     function fuzzy(query, text) {
-      const q = (query || "").toLowerCase();
+      const q = (query || "").toLowerCase().trim();
       const t = (text || "").toLowerCase();
       if (!q) return true;
       if (t.includes(q)) return true;
@@ -48,64 +172,278 @@
       return qi === q.length;
     }
 
+    function parseDateValue(v) {
+      if (!v) return null;
+      if (String(v).includes(".")) {
+        const parts = String(v).split(".");
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return new Date(year, month - 1, day);
+        }
+      }
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatRelevantDate(item) {
+      return item.deadline_at || item.contract_end_date || item.published_at || item.found_at || "-";
+    }
+
+    function makeHighlightedSnippets(text, query) {
+      const raw = String(text || "");
+      const q = String(query || "").trim();
+      if (!q || !raw) return [];
+
+      const lower = raw.toLowerCase();
+      const qLower = q.toLowerCase();
+      const snippets = [];
+      let idx = 0;
+
+      while ((idx = lower.indexOf(qLower, idx)) !== -1 && snippets.length < 5) {
+        const start = Math.max(0, idx - 100);
+        const end = Math.min(raw.length, idx + q.length + 180);
+        let snippet = raw.slice(start, end);
+
+        snippet = esc(snippet);
+        const safeRe = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "ig");
+        snippet = snippet.replace(safeRe, m => `<mark>${m}</mark>`);
+
+        snippets.push("..." + snippet + "...");
+        idx += q.length;
+      }
+
+      return snippets;
+    }
+
+    function shortDescription(item, query, snippets) {
+      const pieces = [];
+
+      if (item.ai_summary) {
+        pieces.push(item.ai_summary.slice(0, 260));
+      } else if (item.pdf_text && !String(item.pdf_text).startsWith("PDF_ERROR")) {
+        pieces.push(String(item.pdf_text).replace(/\s+/g, " ").slice(0, 260));
+      } else if (item.title) {
+        pieces.push(item.title);
+      }
+
+      if (query && snippets.length) {
+        pieces.push(`Hakusana "${query}" löytyi liitetiedoston tekstistä.`);
+      }
+
+      return pieces.join(" ");
+    }
+
+    function scoreItem(item, query) {
+      let score = 0;
+
+      const text = item.search_text || "";
+      const pdfText = item.pdf_text || "";
+      const snippets = makeHighlightedSnippets(pdfText, query);
+
+      if (item.is_new) score += 4;
+      if ((item.signal_tags || []).length) score += (item.signal_tags || []).length * 3;
+      if ((item.theme_tags || []).length) score += (item.theme_tags || []).length * 2;
+      if ((item.matched_keywords || []).length) score += (item.matched_keywords || []).length * 2;
+      if (item.cpv_primary) score += 2;
+      if (item.document_url) score += 2;
+      if (snippets.length) score += 8;
+      if (query && fuzzy(query, text)) score += 4;
+      if (item.estimated_budget_value) score += 3;
+      if (item.deadline_at) score += 2;
+      if (item.contract_end_date) score += 2;
+
+      return score;
+    }
+
+    function renderTags(items, cls = "") {
+      return (items || []).map(t => `<span class="tag ${cls}">${esc(t)}</span>`).join("");
+    }
+
+    function loadProfiles() {
+      try {
+        return JSON.parse(localStorage.getItem("hankinta_profiles") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveProfiles(profiles) {
+      localStorage.setItem("hankinta_profiles", JSON.stringify(profiles));
+    }
+
+    function renderProfiles(runSearch) {
+      const profiles = loadProfiles();
+      const el = document.getElementById("profiles");
+
+      if (!profiles.length) {
+        el.innerHTML = "Ei profiileja vielä.";
+        return;
+      }
+
+      el.innerHTML = profiles.map((p, idx) => `
+        <div style="margin-bottom:8px;">
+          <button class="profile-btn" data-query="${esc(p.query)}">${esc(p.name)}</button>
+          <button class="delete-btn" data-index="${idx}">Poista</button>
+        </div>
+      `).join("");
+
+      el.querySelectorAll(".profile-btn").forEach(btn => {
+        btn.onclick = () => runSearch(btn.getAttribute("data-query"));
+      });
+
+      el.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.onclick = () => {
+          const idx = Number(btn.getAttribute("data-index"));
+          const profiles = loadProfiles();
+          profiles.splice(idx, 1);
+          saveProfiles(profiles);
+          renderProfiles(runSearch);
+        };
+      });
+    }
+
     Promise.all([
       fetch('./data/procurements.json?v=' + Date.now()).then(r => r.json()),
       fetch('./history/2026/procurements-2026.json?v=' + Date.now()).then(r => r.json())
     ]).then(([current, history]) => {
       const answer = document.getElementById('answer');
+      const results = document.getElementById('results');
       const askBtn = document.getElementById('askBtn');
+      const saveProfileBtn = document.getElementById('saveProfileBtn');
       const question = document.getElementById('question');
+      const profileName = document.getElementById('profileName');
 
-      askBtn.onclick = () => {
-        const q = (question.value || '').trim().toLowerCase();
+      const base = [...current, ...history];
+      const uniqueById = {};
+      base.forEach(item => {
+        const key = item.id || item.url;
+        if (!uniqueById[key]) uniqueById[key] = item;
+      });
+      const dataset = Object.values(uniqueById);
+
+      function runSearch(forcedQuery) {
+        const q = (forcedQuery || question.value || '').trim();
+
         if (!q) {
-          answer.textContent = "Kirjoita ensin kysymys.";
+          answer.textContent = "Kirjoita ensin hakusana tai kysymys.";
+          results.innerHTML = "";
           return;
         }
 
-        const base = [...current, ...history];
-        const hits = base.filter(item =>
-          fuzzy(q, item.search_text || "") ||
-          fuzzy(q, item.title || "") ||
-          fuzzy(q, (item.matched_keywords || []).join(" ")) ||
-          fuzzy(q, item.item_type || "") ||
-          fuzzy(q, item.entity || "") ||
-          fuzzy(q, item.ai_summary || "") ||
-          fuzzy(q, item.pdf_text || "")
-        ).slice(0, 10);
+        question.value = q;
+
+        const hits = dataset
+          .filter(item =>
+            fuzzy(q, item.search_text || "") ||
+            fuzzy(q, item.title || "") ||
+            fuzzy(q, (item.matched_keywords || []).join(" ")) ||
+            fuzzy(q, (item.theme_tags || []).join(" ")) ||
+            fuzzy(q, (item.signal_tags || []).join(" ")) ||
+            fuzzy(q, item.item_type || "") ||
+            fuzzy(q, item.entity || "") ||
+            fuzzy(q, item.ai_summary || "") ||
+            fuzzy(q, item.pdf_text || "")
+          )
+          .map(item => ({
+            ...item,
+            _snippets: makeHighlightedSnippets(item.pdf_text || "", q),
+            _score: scoreItem(item, q)
+          }))
+          .sort((a, b) => b._score - a._score)
+          .slice(0, 12);
 
         if (!hits.length) {
-          answer.textContent = "En löytänyt osumia. Kokeile lyhyempää hakua tai katkennutta sanaa, kuten 'maiem' tai 'rakenn'.";
+          answer.textContent = `En löytänyt osumia haulle "${q}". Kokeile lyhyempää hakua tai toista termiä.`;
+          results.innerHTML = "";
           return;
         }
 
-        const byType = {};
+        const typeSummary = {};
         hits.forEach(item => {
           const k = item.item_type || "muu";
-          byType[k] = (byType[k] || 0) + 1;
+          typeSummary[k] = (typeSummary[k] || 0) + 1;
         });
 
-        const summary = [
-          `Löysin ${hits.length} osumaa kysymykselle: "${q}"`,
-          "",
-          "Yhteenveto tyypeittäin:",
-          ...Object.entries(byType).map(([k, v]) => `- ${k}: ${v}`),
-          "",
-          "Parhaat osumat:",
-          ...hits.map((item, i) =>
-            `${i + 1}. ${item.title}
-   Hankintayksikkö: ${item.entity}
-   Tyyppi: ${item.item_type}
-   CPV: ${item.cpv_primary} ${item.cpv_label}
-   Alue: ${item.area}
-   Yhteenveto: ${(item.ai_summary || "").slice(0, 280)}
-   Linkki: ${item.url}
-`
-          )
-        ];
+        answer.innerHTML = `
+          <div><b>Löysin ${hits.length} osumaa haulle:</b> ${esc(q)}</div>
+          <div style="margin-top:8px;">Yhteenveto tyypeittäin:</div>
+          <div style="margin-top:6px;">
+            ${Object.entries(typeSummary).map(([k, v]) => `<span class="tag">${esc(k)}: ${v}</span>`).join("")}
+          </div>
+          <div style="margin-top:10px;" class="muted">
+            Oikeat tekstiosumat liitetiedostoista näkyvät jokaisen hankinnan kohdalla “Osumat liitetiedostosta” -osiossa.
+          </div>
+        `;
 
-        answer.textContent = summary.join("\n");
+        results.innerHTML = hits.map(item => {
+          const snippetsHtml = item._snippets.length
+            ? item._snippets.map(s => `<div style="margin-bottom:10px;">${s}</div>`).join("")
+            : `<div class="muted">Hakusanaa ei löytynyt suoraan liitetiedoston tekstistä, mutta osuma löytyi metadatasta tai yhteenvedosta.</div>`;
+
+          return `
+            <div class="result-card">
+              <div style="font-weight:bold; font-size:18px; margin-bottom:6px;">${esc(item.title)}</div>
+
+              <div class="muted">
+                ${esc(item.entity)} · ${esc(item.item_type || "-")} · ${esc(item.area || "-")}
+              </div>
+
+              <div class="muted" style="margin-top:6px;">
+                Ajankohta: ${esc(formatRelevantDate(item))}
+                ${item.estimated_budget_value ? ` · Arvo: ${esc(item.estimated_budget_value)}` : ''}
+              </div>
+
+              <div style="margin-top:10px;">
+                ${item.cpv_primary || item.cpv_label ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+                ${renderTags(item.theme_tags, "theme")}
+                ${renderTags(item.signal_tags, "signal")}
+              </div>
+
+              <div class="section-title">Tiivistelmä</div>
+              <div>${esc(shortDescription(item, q, item._snippets))}</div>
+
+              <div class="section-title">Osumat liitetiedostosta</div>
+              <div>${snippetsHtml}</div>
+
+              <div class="section-title">Oleelliset tiedot</div>
+              <div class="muted">
+                Hankintayksikkö: ${esc(item.entity)}<br>
+                Lähde: ${esc(item.source_name || item.source_domain || "-")}<br>
+                Tila: ${esc(item.item_type || "-")}<br>
+                Julkaistu: ${esc(item.published_at || item.found_at || "-")}<br>
+                Määräaika: ${esc(item.deadline_at || "-")}<br>
+                Sopimuksen päättyminen: ${esc(item.contract_end_date || "-")}
+              </div>
+
+              <div style="margin-top:12px;">
+                <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
+                ${item.document_url ? ` | <a href="${esc(item.document_url)}" target="_blank">PDF</a>` : ''}
+                ${item.url ? ` | <a href="${esc(item.url)}" target="_blank">Suora linkki</a>` : ''}
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      askBtn.onclick = () => runSearch();
+
+      saveProfileBtn.onclick = () => {
+        const query = (question.value || "").trim();
+        const name = (profileName.value || query).trim();
+
+        if (!query) {
+          answer.textContent = "Kirjoita ensin hakusana tai kysymys ennen profiilin tallennusta.";
+          return;
+        }
+
+        const profiles = loadProfiles();
+        profiles.push({ name, query });
+        saveProfiles(profiles);
+        profileName.value = "";
+        renderProfiles(runSearch);
       };
+
+      renderProfiles(runSearch);
     });
   </script>
 </body>
