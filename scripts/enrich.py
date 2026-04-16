@@ -23,7 +23,7 @@ def classify_type(text):
     ]):
         return "sopimus päättymässä"
 
-    if any(x in t for x in ["talousarvio", "budjetti", "määräraha"]):
+    if any(x in t for x in ["talousarvio", "budjetti", "määräraha", "budjetoitu", "taloussuunnitelma"]):
         return "budjetti"
 
     if any(x in t for x in ["investointi", "investointiohjelma", "investointipäätös"]):
@@ -60,24 +60,16 @@ def find_cpv(text, rules):
 
     return "", ""
 
-def extract_contract_end(text):
+def extract_date_by_triggers(text, trigger_words):
     if not text:
         return ""
-
     t = " ".join(str(text).split())
     t_l = t.lower()
-
-    trigger_words = [
-        "päättyy", "voimassa asti", "voimassa saakka", "sopimuskausi",
-        "optiokausi", "sopimus päättyy", "voimassa", "päättyminen"
-    ]
 
     if not any(w in t_l for w in trigger_words):
         return ""
 
     patterns = [
-        r"(?:päättyy|voimassa asti|voimassa saakka|sopimuskausi päättyy|optiokausi päättyy)[^0-9]{0,25}(\d{1,2}\.\d{1,2}\.\d{4})",
-        r"(?:päättyy|voimassa asti|voimassa saakka|sopimuskausi päättyy|optiokausi päättyy)[^0-9]{0,25}(\d{4}-\d{2}-\d{2})",
         r"(\d{1,2}\.\d{1,2}\.\d{4})",
         r"(\d{4}-\d{2}-\d{2})"
     ]
@@ -86,33 +78,45 @@ def extract_contract_end(text):
         matches = re.findall(pattern, t_l, flags=re.IGNORECASE)
         if matches:
             return matches[0]
-
     return ""
 
+def extract_contract_end(text):
+    return extract_date_by_triggers(text, [
+        "päättyy", "voimassa asti", "voimassa saakka",
+        "sopimuskausi", "optiokausi", "sopimus päättyy",
+        "voimassa", "päättyminen"
+    ])
+
 def extract_deadline(text):
+    return extract_date_by_triggers(text, [
+        "määräaika", "tarjoukset tulee jättää", "tarjousten jättöaika",
+        "viimeistään", "jättöaika", "deadline", "tarjous tulee jättää"
+    ])
+
+def extract_budget_value(text):
     if not text:
         return ""
 
     t = " ".join(str(text).split())
-    t_l = t.lower()
-
-    trigger_words = [
-        "määräaika", "tarjoukset tulee jättää", "tarjousten jättöaika",
-        "viimeistään", "jättöaika", "tarjous tulee jättää", "deadline"
-    ]
-
-    if not any(w in t_l for w in trigger_words):
-        return ""
 
     patterns = [
-        r"(?:määräaika|tarjoukset tulee jättää|tarjousten jättöaika|viimeistään|jättöaika|deadline)[^0-9]{0,25}(\d{1,2}\.\d{1,2}\.\d{4})",
-        r"(?:määräaika|tarjoukset tulee jättää|tarjousten jättöaika|viimeistään|jättöaika|deadline)[^0-9]{0,25}(\d{4}-\d{2}-\d{2})",
+        r"(\d[\d\s]{1,15},\d{2}\s?€)",
+        r"(\d[\d\s]{1,15}\s?€)",
+        r"(\d[\d\s]{1,15}\s?eur)",
+        r"(\d[\d\s]{1,15}\s?milj\.?\s?€)",
+        r"(\d[\d\s]{1,15}\s?m€)"
     ]
 
+    trigger_words = ["budjetti", "määräraha", "arvioitu arvo", "kustannusarvio", "budjetoitu", "investointi"]
+    tl = t.lower()
+
+    if not any(w in tl for w in trigger_words):
+        return ""
+
     for pattern in patterns:
-        matches = re.findall(pattern, t_l, flags=re.IGNORECASE)
-        if matches:
-            return matches[0]
+        m = re.search(pattern, t, flags=re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
 
     return ""
 
@@ -173,7 +177,7 @@ def fallback_tags(text, item_type):
     if item_type == "hankintasuunnitelma":
         signal_tags.append("kilpailutus tulossa")
     if item_type == "hankintakalenteritieto":
-        signal_tags.append("kilpailutus tulossa")
+        signal_tags.append("kalenterimerkintä")
     if item_type == "käynnissä oleva hankinta":
         signal_tags.append("käynnissä")
     if item_type == "mennyt kilpailutus":
@@ -219,6 +223,7 @@ for item in procurements:
     cpv, cpv_label = find_cpv(text, cpv_rules)
     contract_end = extract_contract_end(text)
     deadline_at = extract_deadline(text)
+    budget_value = extract_budget_value(text)
     item_type = classify_type(text)
 
     matched_keywords, theme_tags, signal_tags = extract_keyword_tags(text, keyword_rules)
@@ -256,6 +261,7 @@ for item in procurements:
         "item_type": item_type,
         "contract_end_date": contract_end,
         "deadline_at": deadline_at,
+        "estimated_budget_value": budget_value,
         "matched_keywords": matched_keywords,
         "theme_tags": theme_tags,
         "signal_tags": signal_tags,
@@ -268,7 +274,8 @@ for item in procurements:
             " ".join(signal_tags),
             cpv,
             cpv_label,
-            item_type
+            item_type,
+            budget_value
         ]).lower()
     })
 
