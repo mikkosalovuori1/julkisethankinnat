@@ -23,12 +23,10 @@ def extract_pdf_text(url):
                 text = page.extract_text()
                 if text:
                     texts.append(text)
-            except:
+            except Exception:
                 continue
 
         full_text = "\n\n".join(texts)
-
-        # rajoitetaan koko
         return full_text[:10000]
 
     except Exception as e:
