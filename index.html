@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- 🔥 CACHE KILLER -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>HankintaSeuranta v7</title>
 
 <style>
@@ -10,7 +16,12 @@ body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
 .wrap { max-width:1400px; margin:0 auto; padding:24px; }
 .panel { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
 .filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
-input, select { padding:10px; border-radius:10px; border:1px solid #1f2937; background:#111827; color:white; }
+input, select, button {
+  padding:10px; border-radius:10px;
+  border:1px solid #1f2937;
+  background:#111827; color:white;
+}
+button { background:#2563eb; cursor:pointer; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:14px; }
 .card { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
 .tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block;}
@@ -21,23 +32,17 @@ input, select { padding:10px; border-radius:10px; border:1px solid #1f2937; back
 
 <body>
 <div class="wrap">
-  <h1>HankintaSeuranta v7 🔍</h1>
+  <h1>HankintaSeuranta 🔍</h1>
 
   <div class="filters panel">
 
-    <!-- 🔍 Tekstihaku -->
-    <input id="q" placeholder="Sanahaku (myös katkennut: maiem)" />
-
-    <!-- CPV -->
+    <input id="q" placeholder="Sanahaku (esim. maisema, rakennus)" />
     <input id="cpv" placeholder="CPV-koodi (esim. 714)" />
+    <input id="cpvSearch" placeholder="CPV sanahaku (esim. rakentaminen)" />
 
-    <!-- Sijainti -->
-    <input id="area" placeholder="Alue (Uusimaa, Pirkanmaa...)" />
-
-    <!-- Hankintayksikkö -->
+    <input id="area" placeholder="Alue" />
     <input id="entity" placeholder="Hankintayksikkö" />
 
-    <!-- Tyyppi -->
     <select id="type">
       <option value="">Kaikki tilat</option>
       <option>budjetti</option>
@@ -48,12 +53,13 @@ input, select { padding:10px; border-radius:10px; border:1px solid #1f2937; back
       <option>mennyt kilpailutus</option>
     </select>
 
-    <!-- Päivämäärä -->
     <input id="fromDate" type="date"/>
     <input id="toDate" type="date"/>
 
-    <!-- Uudet -->
     <label><input type="checkbox" id="newOnly"/> Vain uudet</label>
+
+    <!-- 🔥 HAE NAPPI -->
+    <button id="searchBtn">HAE</button>
 
   </div>
 
@@ -82,6 +88,7 @@ fetch('./data/procurements.json?v='+Date.now())
 
 const q=document.getElementById('q');
 const cpv=document.getElementById('cpv');
+const cpvSearch=document.getElementById('cpvSearch');
 const area=document.getElementById('area');
 const entity=document.getElementById('entity');
 const type=document.getElementById('type');
@@ -90,6 +97,7 @@ const toDate=document.getElementById('toDate');
 const newOnly=document.getElementById('newOnly');
 const results=document.getElementById('results');
 const count=document.getElementById('count');
+const searchBtn=document.getElementById('searchBtn');
 
 function score(item){
   let s=0;
@@ -100,7 +108,7 @@ function score(item){
   return s;
 }
 
-function draw(){
+function search(){
 
 const filtered = data.filter(item=>{
 
@@ -109,8 +117,11 @@ const filtered = data.filter(item=>{
   // 🔍 tekstihaku
   if(q.value && !fuzzy(q.value,text)) return false;
 
-  // CPV
+  // CPV koodi
   if(cpv.value && !(item.cpv_primary||"").includes(cpv.value)) return false;
+
+  // 🔥 CPV sanahaku
+  if(cpvSearch.value && !fuzzy(cpvSearch.value, (item.cpv_label||"") + " " + text)) return false;
 
   // alue
   if(area.value && !(item.area||"").toLowerCase().includes(area.value.toLowerCase())) return false;
@@ -166,10 +177,12 @@ results.innerHTML = filtered.map(item=>`
 
 }
 
-[q,cpv,area,entity,type,fromDate,toDate,newOnly]
-.forEach(el=>el.addEventListener("input",draw));
+// 🔥 HAE nappi trigger
+searchBtn.onclick = search;
 
-draw();
+// ensimmäinen render
+search();
+
 });
 </script>
 </body>
