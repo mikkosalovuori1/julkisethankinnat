@@ -1,0 +1,442 @@
+[
+  {
+    "keyword": "maisema",
+    "themes": ["Rakentaminen ja infra", "Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "maisemasuunnittelu",
+    "themes": ["Rakentaminen ja infra", "Konsultointi"],
+    "signals": ["kilpailutus tulossa"]
+  },
+  {
+    "keyword": "maisemointi",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "vihersuunnittelu",
+    "themes": ["Rakentaminen ja infra", "Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "puistosuunnittelu",
+    "themes": ["Rakentaminen ja infra", "Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "rakentaminen",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "urakka",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": ["käynnissä"]
+  },
+  {
+    "keyword": "uudisrakennus",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "peruskorjaus",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "saneeraus",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "maanrakennus",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "asfaltointi",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "silta",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "katu",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "kunnallistekniikka",
+    "themes": ["Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "valaistus",
+    "themes": ["Rakentaminen ja infra", "Energia"],
+    "signals": []
+  },
+  {
+    "keyword": "it",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "ict",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "digitalisaatio",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "digipalvelu",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "ohjelmisto",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "tietojärjestelmä",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "kirjastojärjestelmä",
+    "themes": ["IT ja digitalisaatio", "Koulutus"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "integraatio",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "api",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "pilvipalvelu",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "verkko",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "kyberturva",
+    "themes": ["IT ja digitalisaatio", "Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "mobiilisovellus",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "automaatio",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "robotiikka",
+    "themes": ["IT ja digitalisaatio", "Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "analytiikka",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "tekoäly",
+    "themes": ["IT ja digitalisaatio"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "kamera",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "kameravalvonta",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "kulunvalvonta",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "murtoilmaisin",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "paloilmoitin",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "vartiointi",
+    "themes": ["Turvallisuus"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "turvallisuusjärjestelmä",
+    "themes": ["Turvallisuus"],
+    "signals": []
+  },
+  {
+    "keyword": "siivous",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "puhtaanapito",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "kiinteistöhuolto",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "ylläpito",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": []
+  },
+  {
+    "keyword": "kunnossapito",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "jätehuolto",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "kiinteistöpalvelu",
+    "themes": ["Kiinteistö ja ylläpito"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "terveys",
+    "themes": ["Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "sairaala",
+    "themes": ["Terveydenhuolto"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "hoiva",
+    "themes": ["Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "ambulanssi",
+    "themes": ["Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "laboratorio",
+    "themes": ["Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "potilas",
+    "themes": ["Terveydenhuolto"],
+    "signals": []
+  },
+  {
+    "keyword": "potilastietojärjestelmä",
+    "themes": ["Terveydenhuolto", "IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "koulu",
+    "themes": ["Koulutus"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "päiväkoti",
+    "themes": ["Koulutus"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "oppilaitos",
+    "themes": ["Koulutus"],
+    "signals": []
+  },
+  {
+    "keyword": "oppimisympäristö",
+    "themes": ["Koulutus", "IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "av-laitteet",
+    "themes": ["Koulutus", "IT ja digitalisaatio"],
+    "signals": []
+  },
+  {
+    "keyword": "kouluruokailu",
+    "themes": ["Koulutus", "Elintarvikkeet ja catering"],
+    "signals": ["uusintahankinta"]
+  },
+  {
+    "keyword": "sähkö",
+    "themes": ["Energia"],
+    "signals": []
+  },
+  {
+    "keyword": "aurinkoenergia",
+    "themes": ["Energia"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "maalämpö",
+    "themes": ["Energia"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "energiatehokkuus",
+    "themes": ["Energia"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "latausinfra",
+    "themes": ["Energia", "Liikenne"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "lämpöpumppu",
+    "themes": ["Energia"],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "konsultointi",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "asiantuntijapalvelu",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "suunnittelu",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "projektinjohto",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "rakennuttaminen",
+    "themes": ["Konsultointi", "Rakentaminen ja infra"],
+    "signals": []
+  },
+  {
+    "keyword": "selvitys",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "arviointi",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "auditointi",
+    "themes": ["Konsultointi"],
+    "signals": []
+  },
+  {
+    "keyword": "sopimus päättyy",
+    "themes": [],
+    "signals": ["sopimus päättymässä", "uusintahankinta"]
+  },
+  {
+    "keyword": "voimassa asti",
+    "themes": [],
+    "signals": ["sopimus päättymässä"]
+  },
+  {
+    "keyword": "voimassa saakka",
+    "themes": [],
+    "signals": ["sopimus päättymässä"]
+  },
+  {
+    "keyword": "optiokausi",
+    "themes": [],
+    "signals": ["sopimus päättymässä", "uusintahankinta"]
+  },
+  {
+    "keyword": "talousarvio",
+    "themes": [],
+    "signals": ["budjetoitu"]
+  },
+  {
+    "keyword": "määräraha",
+    "themes": [],
+    "signals": ["budjetoitu"]
+  },
+  {
+    "keyword": "investointiohjelma",
+    "themes": [],
+    "signals": ["investointivihje"]
+  },
+  {
+    "keyword": "hankintasuunnitelma",
+    "themes": [],
+    "signals": ["kilpailutus tulossa"]
+  },
+  {
+    "keyword": "hankintakalenteri",
+    "themes": [],
+    "signals": ["kilpailutus tulossa"]
+  },
+  {
+    "keyword": "markkinavuoropuhelu",
+    "themes": [],
+    "signals": ["kilpailutus tulossa"]
+  },
+  {
+    "keyword": "tarjouspyyntö",
+    "themes": [],
+    "signals": ["käynnissä"]
+  },
+  {
+    "keyword": "hankintailmoitus",
+    "themes": [],
+    "signals": ["käynnissä"]
+  },
+  {
+    "keyword": "hankintapäätös",
+    "themes": [],
+    "signals": ["päätöksessä", "mennyt kilpailutus"]
+  },
+  {
+    "keyword": "valittu toimittaja",
+    "themes": [],
+    "signals": ["mennyt kilpailutus"]
+  }
+]
