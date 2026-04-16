@@ -107,6 +107,13 @@
       text-transform:uppercase;
       letter-spacing:.04em;
     }
+    .logic-box {
+      background:#0f172a;
+      border:1px solid #1f2937;
+      border-radius:12px;
+      padding:12px;
+      margin-top:10px;
+    }
   </style>
 </head>
 <body>
@@ -114,25 +121,32 @@
     <h1>Hankinta-agentti 🤖</h1>
 
     <div class="panel">
-      <div>Kysy esimerkiksi:</div>
+      <div>Käytä hakuja näin:</div>
       <ul>
-        <li>keittiösuunnittelu</li>
-        <li>etsi kaikki kulunvalvontaan liittyvät hankinnat</li>
-        <li>mitä PDF:issä sanotaan maisemasuunnittelusta</li>
-        <li>näytä budjetoidut it-hankinnat</li>
-        <li>mitkä sopimukset päättyvät ja liittyvät siivoukseen</li>
+        <li><b>keittiösuunnittelu</b></li>
+        <li><b>keittiösuunnittelu tai keittiö</b></li>
+        <li><b>kulunvalvonta ja koulu</b></li>
+        <li><b>siivous ja sopimus</b></li>
       </ul>
+
+      <div class="logic-box">
+        <div><b>Logiikka:</b></div>
+        <div class="muted" style="margin-top:6px;">
+          <b>ja</b> = kaikkien sanojen pitää löytyä samasta hankinnasta<br>
+          <b>tai</b> = riittää että jokin termeistä löytyy
+        </div>
+      </div>
     </div>
 
     <div class="panel">
       <div class="row">
         <div style="flex:2; min-width:280px;">
           <label class="muted">Kysy agentilta</label>
-          <textarea id="question" rows="4" placeholder="Kirjoita hakusana tai kysymys, esim. keittiösuunnittelu"></textarea>
+          <textarea id="question" rows="4" placeholder="Esim. keittiösuunnittelu tai keittiö"></textarea>
         </div>
         <div>
           <label class="muted">Tallenna hakuprofiiliksi</label>
-          <input id="profileName" placeholder="Esim. Keittiösuunnittelu" />
+          <input id="profileName" placeholder="Esim. Keittiöprojektit" />
           <button id="saveProfileBtn">Tallenna profiili</button>
         </div>
       </div>
@@ -160,18 +174,6 @@
         .replaceAll('"', "&quot;");
     }
 
-    function fuzzy(query, text) {
-      const q = (query || "").toLowerCase().trim();
-      const t = (text || "").toLowerCase();
-      if (!q) return true;
-      if (t.includes(q)) return true;
-      let qi = 0;
-      for (let i = 0; i < t.length && qi < q.length; i++) {
-        if (t[i] === q[qi]) qi++;
-      }
-      return qi === q.length;
-    }
-
     function parseDateValue(v) {
       if (!v) return null;
       if (String(v).includes(".")) {
@@ -189,56 +191,118 @@
       return item.deadline_at || item.contract_end_date || item.published_at || item.found_at || "-";
     }
 
-    function makeHighlightedSnippets(text, query) {
-      const raw = String(text || "");
-      const q = String(query || "").trim();
-      if (!q || !raw) return [];
-
-      const lower = raw.toLowerCase();
-      const qLower = q.toLowerCase();
-      const snippets = [];
-      let idx = 0;
-
-      while ((idx = lower.indexOf(qLower, idx)) !== -1 && snippets.length < 5) {
-        const start = Math.max(0, idx - 100);
-        const end = Math.min(raw.length, idx + q.length + 180);
-        let snippet = raw.slice(start, end);
-
-        snippet = esc(snippet);
-        const safeRe = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "ig");
-        snippet = snippet.replace(safeRe, m => `<mark>${m}</mark>`);
-
-        snippets.push("..." + snippet + "...");
-        idx += q.length;
-      }
-
-      return snippets;
+    function searchableText(item) {
+      return [
+        item.title || "",
+        item.ai_summary || "",
+        item.pdf_text || ""
+      ].join(" ").toLowerCase();
     }
 
-    function shortDescription(item, query, snippets) {
+    function splitTerms(query) {
+      return query
+        .split(/\s+/)
+        .map(x => x.trim())
+        .filter(Boolean);
+    }
+
+    function parseLogicalQuery(query) {
+      const q = String(query || "").trim().toLowerCase();
+
+      if (!q) {
+        return { mode: "single", terms: [] };
+      }
+
+      if (q.includes(" tai ")) {
+        return {
+          mode: "or",
+          terms: q.split(/\s+tai\s+/i).map(s => s.trim()).filter(Boolean)
+        };
+      }
+
+      if (q.includes(" ja ")) {
+        return {
+          mode: "and",
+          terms: q.split(/\s+ja\s+/i).map(s => s.trim()).filter(Boolean)
+        };
+      }
+
+      return {
+        mode: "single",
+        terms: [q]
+      };
+    }
+
+    function matchLogicalQuery(item, parsed) {
+      const text = searchableText(item);
+
+      if (!parsed.terms.length) return false;
+
+      if (parsed.mode === "or") {
+        return parsed.terms.some(term => text.includes(term));
+      }
+
+      if (parsed.mode === "and") {
+        return parsed.terms.every(term => text.includes(term));
+      }
+
+      return text.includes(parsed.terms[0]);
+    }
+
+    function makeHighlightedSnippets(text, terms) {
+      const raw = String(text || "");
+      if (!raw || !(terms || []).length) return [];
+
+      const snippets = [];
+      const lower = raw.toLowerCase();
+
+      for (const term of terms) {
+        const q = String(term || "").trim();
+        if (!q) continue;
+
+        const qLower = q.toLowerCase();
+        let idx = 0;
+
+        while ((idx = lower.indexOf(qLower, idx)) !== -1 && snippets.length < 8) {
+          const start = Math.max(0, idx - 100);
+          const end = Math.min(raw.length, idx + q.length + 180);
+          let snippet = raw.slice(start, end);
+
+          snippet = esc(snippet);
+
+          for (const t of terms) {
+            const safeRe = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "ig");
+            snippet = snippet.replace(safeRe, m => `<mark>${m}</mark>`);
+          }
+
+          snippets.push("..." + snippet + "...");
+          idx += q.length;
+        }
+      }
+
+      return [...new Set(snippets)].slice(0, 8);
+    }
+
+    function shortDescription(item, terms, snippets) {
       const pieces = [];
 
       if (item.ai_summary) {
-        pieces.push(item.ai_summary.slice(0, 260));
+        pieces.push(item.ai_summary.slice(0, 280));
       } else if (item.pdf_text && !String(item.pdf_text).startsWith("PDF_ERROR")) {
-        pieces.push(String(item.pdf_text).replace(/\s+/g, " ").slice(0, 260));
+        pieces.push(String(item.pdf_text).replace(/\s+/g, " ").slice(0, 280));
       } else if (item.title) {
         pieces.push(item.title);
       }
 
-      if (query && snippets.length) {
-        pieces.push(`Hakusana "${query}" löytyi liitetiedoston tekstistä.`);
+      if (terms.length && snippets.length) {
+        pieces.push(`Hakutermit löytyivät liitetiedoston tekstistä.`);
       }
 
       return pieces.join(" ");
     }
 
-    function scoreItem(item, query) {
+    function scoreItem(item, terms, snippets) {
       let score = 0;
-
-      const text = item.search_text || "";
-      const pdfText = item.pdf_text || "";
-      const snippets = makeHighlightedSnippets(pdfText, query);
 
       if (item.is_new) score += 4;
       if ((item.signal_tags || []).length) score += (item.signal_tags || []).length * 3;
@@ -246,11 +310,15 @@
       if ((item.matched_keywords || []).length) score += (item.matched_keywords || []).length * 2;
       if (item.cpv_primary) score += 2;
       if (item.document_url) score += 2;
-      if (snippets.length) score += 8;
-      if (query && fuzzy(query, text)) score += 4;
+      if (snippets.length) score += 10;
       if (item.estimated_budget_value) score += 3;
       if (item.deadline_at) score += 2;
       if (item.contract_end_date) score += 2;
+
+      const text = searchableText(item);
+      terms.forEach(term => {
+        if (text.includes(term)) score += 3;
+      });
 
       return score;
     }
@@ -261,14 +329,14 @@
 
     function loadProfiles() {
       try {
-        return JSON.parse(localStorage.getItem("hankinta_profiles") || "[]");
+        return JSON.parse(localStorage.getItem("hankinta_profiles_v2") || "[]");
       } catch {
         return [];
       }
     }
 
     function saveProfiles(profiles) {
-      localStorage.setItem("hankinta_profiles", JSON.stringify(profiles));
+      localStorage.setItem("hankinta_profiles_v2", JSON.stringify(profiles));
     }
 
     function renderProfiles(runSearch) {
@@ -332,28 +400,23 @@
 
         question.value = q;
 
+        const parsed = parseLogicalQuery(q);
+
         const hits = dataset
-          .filter(item =>
-            fuzzy(q, item.search_text || "") ||
-            fuzzy(q, item.title || "") ||
-            fuzzy(q, (item.matched_keywords || []).join(" ")) ||
-            fuzzy(q, (item.theme_tags || []).join(" ")) ||
-            fuzzy(q, (item.signal_tags || []).join(" ")) ||
-            fuzzy(q, item.item_type || "") ||
-            fuzzy(q, item.entity || "") ||
-            fuzzy(q, item.ai_summary || "") ||
-            fuzzy(q, item.pdf_text || "")
-          )
-          .map(item => ({
-            ...item,
-            _snippets: makeHighlightedSnippets(item.pdf_text || "", q),
-            _score: scoreItem(item, q)
-          }))
+          .filter(item => matchLogicalQuery(item, parsed))
+          .map(item => {
+            const snippets = makeHighlightedSnippets(item.pdf_text || "", parsed.terms);
+            return {
+              ...item,
+              _snippets: snippets,
+              _score: scoreItem(item, parsed.terms, snippets)
+            };
+          })
           .sort((a, b) => b._score - a._score)
           .slice(0, 12);
 
         if (!hits.length) {
-          answer.textContent = `En löytänyt osumia haulle "${q}". Kokeile lyhyempää hakua tai toista termiä.`;
+          answer.textContent = `En löytänyt osumia haulle "${q}". Haku kohdistuu vain otsikkoon, kuvaukseen, sisältöön ja liitetiedoston tekstiin.`;
           results.innerHTML = "";
           return;
         }
@@ -366,19 +429,19 @@
 
         answer.innerHTML = `
           <div><b>Löysin ${hits.length} osumaa haulle:</b> ${esc(q)}</div>
-          <div style="margin-top:8px;">Yhteenveto tyypeittäin:</div>
+          <div class="muted" style="margin-top:6px;">
+            Haku käyttää vain hankinnan otsikkoa, kuvausta, sisältöä ja liitetiedoston tekstiä. Metadataa ei käytetä osumien löytämiseen.
+          </div>
+          <div style="margin-top:10px;">Yhteenveto tyypeittäin:</div>
           <div style="margin-top:6px;">
             ${Object.entries(typeSummary).map(([k, v]) => `<span class="tag">${esc(k)}: ${v}</span>`).join("")}
-          </div>
-          <div style="margin-top:10px;" class="muted">
-            Oikeat tekstiosumat liitetiedostoista näkyvät jokaisen hankinnan kohdalla “Osumat liitetiedostosta” -osiossa.
           </div>
         `;
 
         results.innerHTML = hits.map(item => {
           const snippetsHtml = item._snippets.length
             ? item._snippets.map(s => `<div style="margin-bottom:10px;">${s}</div>`).join("")
-            : `<div class="muted">Hakusanaa ei löytynyt suoraan liitetiedoston tekstistä, mutta osuma löytyi metadatasta tai yhteenvedosta.</div>`;
+            : `<div class="muted">Hakutermi löytyi otsikosta, kuvauksesta tai sisällöstä, mutta ei suoraa osumaa liitetiedoston tekstissä.</div>`;
 
           return `
             <div class="result-card">
@@ -400,7 +463,7 @@
               </div>
 
               <div class="section-title">Tiivistelmä</div>
-              <div>${esc(shortDescription(item, q, item._snippets))}</div>
+              <div>${esc(shortDescription(item, parsed.terms, item._snippets))}</div>
 
               <div class="section-title">Osumat liitetiedostosta</div>
               <div>${snippetsHtml}</div>
@@ -408,11 +471,11 @@
               <div class="section-title">Oleelliset tiedot</div>
               <div class="muted">
                 Hankintayksikkö: ${esc(item.entity)}<br>
-                Lähde: ${esc(item.source_name || item.source_domain || "-")}<br>
                 Tila: ${esc(item.item_type || "-")}<br>
-                Julkaistu: ${esc(item.published_at || item.found_at || "-")}<br>
+                Ajankohta: ${esc(item.published_at || item.found_at || "-")}<br>
                 Määräaika: ${esc(item.deadline_at || "-")}<br>
-                Sopimuksen päättyminen: ${esc(item.contract_end_date || "-")}
+                Sopimuksen päättyminen: ${esc(item.contract_end_date || "-")}<br>
+                Arvioitu arvo: ${esc(item.estimated_budget_value || "-")}
               </div>
 
               <div style="margin-top:12px;">
@@ -432,7 +495,7 @@
         const name = (profileName.value || query).trim();
 
         if (!query) {
-          answer.textContent = "Kirjoita ensin hakusana tai kysymys ennen profiilin tallennusta.";
+          answer.textContent = "Kirjoita ensin hakulauseke ennen profiilin tallennusta.";
           return;
         }
 
