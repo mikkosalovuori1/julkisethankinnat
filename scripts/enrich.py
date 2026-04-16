@@ -48,15 +48,16 @@ def find_cpv(text, rules):
     matches = []
 
     for rule in rules:
-        score = sum(1 for kw in rule["keywords"] if kw.lower() in text_l)
+        score = sum(1 for kw in rule.get("keywords", []) if kw.lower() in text_l)
         if score:
             matches.append((score, rule))
 
-    matches.sort(reverse=True)
+    # Korjaus: lajitellaan vain score-arvolla, ei dict-olioita vertailemalla
+    matches.sort(key=lambda x: x[0], reverse=True)
 
     if matches:
         best = matches[0][1]
-        return best["cpv"], best["label"]
+        return best.get("cpv", ""), best.get("label", "")
 
     return "", ""
 
@@ -102,8 +103,9 @@ def extract_keyword_tags(text, keyword_rules):
             continue
 
         if kw in text_l:
-            if rule["keyword"] not in matched_keywords:
-                matched_keywords.append(rule["keyword"])
+            original_kw = rule.get("keyword", "")
+            if original_kw and original_kw not in matched_keywords:
+                matched_keywords.append(original_kw)
 
             for theme in rule.get("themes", []):
                 if theme not in theme_tags:
