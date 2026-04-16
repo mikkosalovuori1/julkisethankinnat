@@ -7,7 +7,7 @@ import json
 import requests
 from datetime import datetime
 from parsers import route_parser
-from pdf_extract import extract_pdf_text
+from scripts.pdf_extract import ...
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
