@@ -71,7 +71,10 @@ for item in procurements:
     title = item.get("title", "")
     source_page = item.get("source_page", "")
     url = item.get("url", "")
-    combined_text = f"{title} {source_page} {url}"
+    type_hint = item.get("type_hint", "")
+
+    # 👇 TÄRKEÄ PARANNUS v5
+    combined_text = f"{title} {source_page} {url} {type_hint}"
 
     cpv_primary, cpv_label, cpv_secondary, cpv_confidence = find_cpv(combined_text, rules)
     matched_keywords = extract_keywords(combined_text, rules)
