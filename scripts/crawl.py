@@ -7,6 +7,7 @@ import json
 import requests
 from datetime import datetime
 from parsers import route_parser
+from pdf_extract import extract_pdf_text
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
@@ -50,6 +51,12 @@ for source in sources:
                 full_url = p["url"]
                 old_item = old_by_url.get(full_url)
 
+                document_url = p.get("document_url", "")
+                pdf_text = old_item.get("pdf_text", "") if old_item else ""
+
+                if document_url and document_url.lower().endswith(".pdf"):
+                    pdf_text = extract_pdf_text(document_url)
+
                 results.append({
                     "id": full_url,
                     "entity": entity_name,
@@ -59,8 +66,9 @@ for source in sources:
                     "source_page": url,
                     "title": p.get("title") or full_url,
                     "url": full_url,
-                    "document_url": p.get("document_url", ""),
+                    "document_url": document_url,
                     "type_hint": p.get("type_hint", ""),
+                    "pdf_text": pdf_text,
                     "found_at": old_item.get("found_at") if old_item else datetime.utcnow().isoformat() + "Z",
                     "last_seen_at": datetime.utcnow().isoformat() + "Z",
                     "is_new": old_item is None
@@ -78,6 +86,7 @@ for source in sources:
                 "url": url,
                 "document_url": "",
                 "type_hint": "",
+                "pdf_text": "",
                 "found_at": datetime.utcnow().isoformat() + "Z",
                 "last_seen_at": datetime.utcnow().isoformat() + "Z",
                 "is_new": False
