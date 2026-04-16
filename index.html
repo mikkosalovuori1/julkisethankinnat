@@ -40,6 +40,31 @@
       font-weight: 700;
       margin-top: 4px;
     }
+    .filters {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr auto;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .input, .select {
+      width: 100%;
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px 14px;
+      min-height: 46px;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -102,6 +127,18 @@
       padding: 40px;
       color: white;
     }
+    .empty {
+      padding: 24px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      color: #94a3b8;
+    }
+    @media (max-width: 800px) {
+      .filters {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -118,52 +155,105 @@
         .replaceAll('"', '&quot;');
     }
 
+    function renderDashboard(data) {
+      const app = document.getElementById('app');
+      const entities = [...new Set(data.map(x => x.entity).filter(Boolean))].sort();
+
+      app.innerHTML = `
+        <div class="top">
+          <div>
+            <h1 style="margin:0; font-size:32px;">HankintaSeuranta</h1>
+            <div style="color:#94a3b8; margin-top:6px;">
+              Julkisten hankintojen päivittäinen seuranta
+            </div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Löytyi</div>
+            <div class="stat-value" id="countValue">${data.length}</div>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input id="searchInput" class="input" type="text" placeholder="Hae hankinnoista tai kunnista..." />
+          <select id="entityFilter" class="select">
+            <option value="">Kaikki kunnat / organisaatiot</option>
+            ${entities.map(e => `<option value="${safe(e)}">${safe(e)}</option>`).join('')}
+          </select>
+          <label class="check">
+            <input id="newOnly" type="checkbox" />
+            <span>Vain uudet</span>
+          </label>
+        </div>
+
+        <div id="results" class="grid"></div>
+      `;
+
+      const searchInput = document.getElementById('searchInput');
+      const entityFilter = document.getElementById('entityFilter');
+      const newOnly = document.getElementById('newOnly');
+      const results = document.getElementById('results');
+      const countValue = document.getElementById('countValue');
+
+      function draw() {
+        const q = (searchInput.value || '').trim().toLowerCase();
+        const entity = entityFilter.value;
+        const onlyNew = newOnly.checked;
+
+        const filtered = data.filter(item => {
+          const matchesText =
+            !q ||
+            (item.title || '').toLowerCase().includes(q) ||
+            (item.entity || '').toLowerCase().includes(q) ||
+            (item.source_page || '').toLowerCase().includes(q);
+
+          const matchesEntity = !entity || item.entity === entity;
+          const matchesNew = !onlyNew || !!item.is_new;
+
+          return matchesText && matchesEntity && matchesNew;
+        });
+
+        countValue.textContent = filtered.length;
+
+        if (!filtered.length) {
+          results.innerHTML = `<div class="empty">Ei tuloksia valituilla suodattimilla.</div>`;
+          return;
+        }
+
+        results.innerHTML = filtered.map(item => `
+          <div class="card">
+            <div class="card-top">
+              <div class="entity">${safe(item.entity)}</div>
+              ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
+            </div>
+
+            <div class="title">${safe(item.title)}</div>
+
+            ${item.source_page ? `
+              <div class="meta">Lähdesivu: ${safe(item.source_page)}</div>
+            ` : ''}
+
+            <div class="time">${safe(item.found_at)}</div>
+
+            <a class="btn" href="${safe(item.url)}" target="_blank" rel="noopener noreferrer">
+              Avaa linkki
+            </a>
+          </div>
+        `).join('');
+      }
+
+      searchInput.addEventListener('input', draw);
+      entityFilter.addEventListener('change', draw);
+      newOnly.addEventListener('change', draw);
+
+      draw();
+    }
+
     fetch('./data/procurements.json?v=' + Date.now())
       .then(res => {
         if (!res.ok) throw new Error('JSON-lataus epäonnistui');
         return res.json();
       })
-      .then(data => {
-        const app = document.getElementById('app');
-
-        app.innerHTML = `
-          <div class="top">
-            <div>
-              <h1 style="margin:0; font-size:32px;">HankintaSeuranta</h1>
-              <div style="color:#94a3b8; margin-top:6px;">
-                Julkisten hankintojen päivittäinen seuranta
-              </div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Löytyi</div>
-              <div class="stat-value">${data.length}</div>
-            </div>
-          </div>
-
-          <div class="grid">
-            ${data.map(item => `
-              <div class="card">
-                <div class="card-top">
-                  <div class="entity">${safe(item.entity)}</div>
-                  ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
-                </div>
-
-                <div class="title">${safe(item.title)}</div>
-
-                ${item.source_page ? `
-                  <div class="meta">Lähdesivu: ${safe(item.source_page)}</div>
-                ` : ''}
-
-                <div class="time">${safe(item.found_at)}</div>
-
-                <a class="btn" href="${safe(item.url)}" target="_blank" rel="noopener noreferrer">
-                  Avaa linkki
-                </a>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      })
+      .then(data => renderDashboard(data))
       .catch(err => {
         console.error(err);
         document.getElementById('app').innerHTML = `
