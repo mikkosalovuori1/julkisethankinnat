@@ -1,1 +1,62 @@
-
+[
+  {
+    "cpv": "71420000",
+    "label": "Maisema-arkkitehtipalvelut",
+    "keywords": ["maisema", "maisemasuunnittelu", "maisemointi", "puistosuunnittelu", "vihersuunnittelu"]
+  },
+  {
+    "cpv": "71240000",
+    "label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "keywords": ["suunnittelu", "yleissuunnittelu", "rakennussuunnittelu", "arkkitehti"]
+  },
+  {
+    "cpv": "45112700",
+    "label": "Maisemointityöt",
+    "keywords": ["pihatyö", "ympäristörakentaminen", "vihertyö", "maisemarakennus"]
+  },
+  {
+    "cpv": "30200000",
+    "label": "Tietokoneet ja laitteet",
+    "keywords": ["tietokone", "läppäri", "työasema", "mobiililaite", "tabletti"]
+  },
+  {
+    "cpv": "48000000",
+    "label": "Ohjelmistopaketit ja tietojärjestelmät",
+    "keywords": ["ohjelmisto", "järjestelmä", "sovellus", "erp", "crm", "kirjastojärjestelmä"]
+  },
+  {
+    "cpv": "72200000",
+    "label": "Ohjelmistokehitys ja konsultointi",
+    "keywords": ["ohjelmistokehitys", "integraatio", "api", "kehitys", "digipalvelu", "digitalisaatio"]
+  },
+  {
+    "cpv": "79710000",
+    "label": "Turvallisuuspalvelut",
+    "keywords": ["turvallisuus", "vartiointi", "valvonta", "kamera", "kulunvalvonta", "murtoilmaisin"]
+  },
+  {
+    "cpv": "90910000",
+    "label": "Siivouspalvelut",
+    "keywords": ["siivous", "puhtaanapito", "ylläpitosiivous", "perussiivous"]
+  },
+  {
+    "cpv": "45450000",
+    "label": "Rakennusten viimeistelytyöt",
+    "keywords": ["rakentaminen", "urakka", "saneeraus", "peruskorjaus", "uudisrakennus"]
+  },
+  {
+    "cpv": "45200000",
+    "label": "Rakennus- ja maanrakennustyöt",
+    "keywords": ["infra", "silta", "katu", "asfaltointi", "maanrakennus", "liikuntakeskus"]
+  },
+  {
+    "cpv": "55500000",
+    "label": "Ruokala- ja ateriapalvelut",
+    "keywords": ["ruokailu", "ateria", "kouluruoka", "keittiö", "elintarvike"]
+  },
+  {
+    "cpv": "85100000",
+    "label": "Terveyspalvelut",
+    "keywords": ["terveys", "sairaala", "hoiva", "ensihoito", "ambulanssi", "potilas"]
+  }
+]
