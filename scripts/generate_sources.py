@@ -3,7 +3,6 @@ from pathlib import Path
 
 SOURCES_FILE = "data/sources.json"
 
-# Lista kunnista (optimoitu domain-logiikka)
 municipalities = [
     "helsinki","espoo","vantaa","tampere","turku","oulu","jyvaskyla","lahti","kuopio","pori",
     "lappeenranta","vaasa","seinajoki","rovaniemi","joensuu","mikkeli","kotka","kouvola",
@@ -13,31 +12,52 @@ municipalities = [
     "ulvila","karkkila","kemijarvi","pieksamaki","nurmes","lieksa","suonenjoki","forssa"
 ]
 
-def build_url(name):
-    return f"https://www.{name}.fi/hankinnat"
+def build_urls(name: str):
+    base = f"https://www.{name}.fi"
+
+    return [
+        f"{base}/hankinnat",
+        f"{base}/paatoksenteko",
+        f"{base}/dynasty",
+        f"{base}/dynasty10",
+        f"{base}/cgi/DREQUEST.PHP",
+        f"{base}/tweb",
+        f"{base}/tweb/ktwebscr",
+        f"{base}/oncloudos",
+        f"{base}/asia"
+    ]
 
 def load_existing():
-    if not Path(SOURCES_FILE).exists():
+    path = Path(SOURCES_FILE)
+    if not path.exists():
         return []
-    with open(SOURCES_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
 
 def main():
     sources = load_existing()
 
-    existing_names = set(s["name"].lower() for s in sources)
+    existing_names = set()
+    for s in sources:
+        name = (s.get("name") or "").strip().lower()
+        if name:
+            existing_names.add(name)
 
     for m in municipalities:
         name = m.capitalize()
 
-        if m in existing_names:
+        if m in existing_names or name.lower() in existing_names:
             continue
 
         sources.append({
             "name": name,
             "area": "Suomi",
             "source_name": name,
-            "urls": [build_url(m)]
+            "urls": build_urls(m)
         })
 
     with open(SOURCES_FILE, "w", encoding="utf-8") as f:
