@@ -14,6 +14,7 @@ def load_json(path, default):
 
 def classify_type(text):
     t = text.lower()
+
     if any(x in t for x in ["talousarvio", "budjetti", "määräraha"]):
         return "budjetti"
     if any(x in t for x in ["investointi", "investointiohjelma", "investointipäätös"]):
@@ -26,6 +27,7 @@ def classify_type(text):
         return "käynnissä oleva hankinta"
     if any(x in t for x in ["valittu toimittaja", "hankintapäätös", "päätös", "myönnetty", "sopimus tehty"]):
         return "mennyt kilpailutus"
+
     return "muu hankintatieto"
 
 def find_cpv(text, rules):
@@ -37,6 +39,7 @@ def find_cpv(text, rules):
         for kw in rule["keywords"]:
             if kw.lower() in text_l:
                 hit_count += 1
+
         if hit_count > 0:
             matches.append({
                 "cpv": rule["cpv"],
@@ -45,6 +48,7 @@ def find_cpv(text, rules):
             })
 
     matches.sort(key=lambda x: x["score"], reverse=True)
+
     if matches:
         primary = matches[0]
         secondary = [m["cpv"] for m in matches[1:3]]
@@ -56,10 +60,12 @@ def find_cpv(text, rules):
 def extract_keywords(text, rules):
     text_l = text.lower()
     hits = []
+
     for rule in rules:
         for kw in rule["keywords"]:
             if kw.lower() in text_l and kw not in hits:
                 hits.append(kw)
+
     return hits[:12]
 
 procurements = load_json(PROCUREMENTS_FILE, [])
@@ -73,7 +79,6 @@ for item in procurements:
     url = item.get("url", "")
     type_hint = item.get("type_hint", "")
 
-    # 👇 TÄRKEÄ PARANNUS v5
     combined_text = f"{title} {source_page} {url} {type_hint}"
 
     cpv_primary, cpv_label, cpv_secondary, cpv_confidence = find_cpv(combined_text, rules)
