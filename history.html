@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hankintahistoria</title>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#0a0e1a; color:#e5e7eb; }
+    .wrap { max-width:1280px; margin:0 auto; padding:32px 20px; }
+    .filters { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+    .input, .select { background:#111827; color:#e5e7eb; border:1px solid #1f2937; border-radius:12px; padding:12px 14px; }
+    .card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; margin-bottom:12px; }
+    .muted { color:#94a3b8; font-size:13px; }
+    .tag { display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px; margin:0 6px 6px 0; background:#1f2937; color:#cbd5e1; }
+    a { color:#60a5fa; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Hankintahistoria</h1>
+    <div class="muted" style="margin-bottom:16px;">Hae vuosiluvulla, CPV:llä, hakusanoilla, hankintayksiköllä, lähteellä ja alueella</div>
 
+    <div class="filters">
+      <input id="q" class="input" placeholder="Hakusana, myös katkennut" />
+      <input id="year" class="input" placeholder="Vuosi, esim. 2026" />
+      <input id="cpv" class="input" placeholder="CPV-koodi" />
+      <input id="entity" class="input" placeholder="Hankintayksikkö" />
+      <input id="source" class="input" placeholder="Lähde" />
+      <input id="area" class="input" placeholder="Alue" />
+    </div>
+
+    <div id="results">Ladataan historiaa...</div>
+  </div>
+
+  <script>
+    function safe(v) {
+      return String(v || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function fuzzy(query, text) {
+      const q = (query || "").toLowerCase();
+      const t = (text || "").toLowerCase();
+      if (!q) return true;
+      if (t.includes(q)) return true;
+      let qi = 0;
+      for (let i = 0; i < t.length && qi < q.length; i++) {
+        if (t[i] === q[qi]) qi++;
+      }
+      return qi === q.length;
+    }
+
+    fetch('./history/2026/procurements-2026.json?v=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        const q = document.getElementById('q');
+        const year = document.getElementById('year');
+        const cpv = document.getElementById('cpv');
+        const entity = document.getElementById('entity');
+        const source = document.getElementById('source');
+        const area = document.getElementById('area');
+        const results = document.getElementById('results');
+
+        function draw() {
+          const filtered = data.filter(item => {
+            const yearText = (item.archived_first_seen_at || item.published_at || "");
+            return fuzzy(q.value, item.search_text || "") &&
+                   (!year.value || yearText.includes(year.value)) &&
+                   (!cpv.value || (item.cpv_primary || "").includes(cpv.value)) &&
+                   (!entity.value || (item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) &&
+                   (!source.value || (item.source_name || "").toLowerCase().includes(source.value.toLowerCase())) &&
+                   (!area.value || (item.area || "").toLowerCase().includes(area.value.toLowerCase()));
+          });
+
+          results.innerHTML = filtered.map(item => `
+            <div class="card">
+              <div><strong>${safe(item.title)}</strong></div>
+              <div class="muted">${safe(item.entity)} · ${safe(item.item_type)} · ${safe(item.cpv_primary)} ${safe(item.cpv_label)}</div>
+              <div class="muted">Lähde: ${safe(item.source_name)} · Alue: ${safe(item.area)}</div>
+              <div class="muted">Ensihavainto: ${safe(item.archived_first_seen_at)} · Viimeinen havainto: ${safe(item.archived_last_seen_at)}</div>
+              <div style="margin-top:8px;">${(item.matched_keywords || []).map(t => `<span class="tag">${safe(t)}</span>`).join('')}</div>
+              <div style="margin-top:10px;"><a href="${safe(item.url)}" target="_blank">Avaa hankinta</a></div>
+            </div>
+          `).join('');
+        }
+
+        [q, year, cpv, entity, source, area].forEach(el => el.addEventListener('input', draw));
+        draw();
+      });
+  </script>
+</body>
+</html>
