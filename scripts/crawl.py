@@ -1,9 +1,8 @@
 import json
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
-from urllib.parse import urljoin
 from pathlib import Path
+from scripts.parsers import route_parser
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
@@ -39,33 +38,29 @@ for source in sources:
                 headers={"User-Agent": "Mozilla/5.0 HankintaSeurantaBot/1.0"}
             )
             r.raise_for_status()
-            soup = BeautifulSoup(r.text, "html.parser")
 
-            for a in soup.find_all("a", href=True):
-                href = a["href"]
-                text = a.get_text(" ", strip=True)
-                full_url = urljoin(url, href)
+            parser = route_parser(url)
+            items = parser(url, r.text)
 
-                blob = f"{text} {href}".lower()
-                if any(token in blob for token in [
-                    "hank", "tarjous", "kilpailu", "sopimus",
-                    ".pdf", "invest", "budjet", "suunnitelma", "kalenteri"
-                ]):
-                    old_item = old_by_url.get(full_url)
-                    results.append({
-                        "id": full_url,
-                        "entity": entity_name,
-                        "unit_name": entity_name,
-                        "area": area_name,
-                        "source_name": source_name,
-                        "source_page": url,
-                        "title": text or href,
-                        "url": full_url,
-                        "document_url": full_url if full_url.lower().endswith(".pdf") else "",
-                        "found_at": old_item.get("found_at") if old_item else datetime.utcnow().isoformat() + "Z",
-                        "last_seen_at": datetime.utcnow().isoformat() + "Z",
-                        "is_new": old_item is None
-                    })
+            for p in items:
+                full_url = p["url"]
+                old_item = old_by_url.get(full_url)
+
+                results.append({
+                    "id": full_url,
+                    "entity": entity_name,
+                    "unit_name": entity_name,
+                    "area": area_name,
+                    "source_name": source_name,
+                    "source_page": url,
+                    "title": p.get("title") or full_url,
+                    "url": full_url,
+                    "document_url": p.get("document_url", ""),
+                    "type_hint": p.get("type_hint", ""),
+                    "found_at": old_item.get("found_at") if old_item else datetime.utcnow().isoformat() + "Z",
+                    "last_seen_at": datetime.utcnow().isoformat() + "Z",
+                    "is_new": old_item is None
+                })
 
         except Exception as e:
             results.append({
@@ -78,63 +73,10 @@ for source in sources:
                 "title": f"ERROR: {e}",
                 "url": url,
                 "document_url": "",
+                "type_hint": "",
                 "found_at": datetime.utcnow().isoformat() + "Z",
                 "last_seen_at": datetime.utcnow().isoformat() + "Z",
                 "is_new": False
-            })
-
-unique = {}
-for item in results:
-    key = item["url"]
-    if key not in unique:
-        unique[key] = item
-
-results = list(unique.values())
-
-with open(PROCUREMENTS_FILE, "w", encoding="utf-8") as f:
-    json.dump(results, f, ensure_ascii=False, indent=2)
-
-for source in sources:
-    for url in source["urls"]:
-        try:
-            r = requests.get(url, timeout=30, headers={
-                "User-Agent": "Mozilla/5.0 HankintaSeurantaBot/1.0"
-            })
-            r.raise_for_status()
-            soup = BeautifulSoup(r.text, "html.parser")
-
-            for a in soup.find_all("a", href=True):
-                href = a["href"]
-                text = a.get_text(" ", strip=True)
-                full_url = urljoin(url, href)
-
-                if "hank" in text.lower() or href.lower().endswith(".pdf"):
-                    old_item = old_by_url.get(full_url)
-                    matched_keywords = detect_keywords(text)
-
-                    item = {
-                        "entity": source["name"],
-                        "title": text or href,
-                        "url": full_url,
-                        "source_page": url,
-                        "found_at": old_item.get("found_at") if old_item else datetime.utcnow().isoformat() + "Z",
-                        "last_seen_at": datetime.utcnow().isoformat() + "Z",
-                        "is_new": old_item is None,
-                        "matched_keywords": matched_keywords
-                    }
-
-                    results.append(item)
-
-        except Exception as e:
-            results.append({
-                "entity": source["name"],
-                "title": f"ERROR: {e}",
-                "url": url,
-                "source_page": url,
-                "found_at": datetime.utcnow().isoformat() + "Z",
-                "last_seen_at": datetime.utcnow().isoformat() + "Z",
-                "is_new": False,
-                "matched_keywords": []
             })
 
 unique = {}
