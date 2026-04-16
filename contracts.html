@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<title>Päättyvät sopimukset</title>
+
+<style>
+body {background:#0a0e1a;color:white;font-family:Arial;}
+.wrap{max-width:1200px;margin:auto;padding:20px;}
+.card{background:#111827;padding:14px;margin-bottom:10px;border-radius:10px;}
+.badge{background:red;padding:4px 8px;border-radius:999px;}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<h1>⏳ Päättyvät sopimukset</h1>
+
+<input id="days" placeholder="päivää (esim. 90)" value="90">
+<button onclick="draw()">Hae</button>
+
+<div id="results"></div>
+</div>
+
+<script>
+function parseDate(d){
+ if(!d) return null;
+ if(d.includes(".")){
+   const [day,month,year]=d.split(".");
+   return new Date(year,month-1,day);
+ }
+ return new Date(d);
+}
+
+let data=[];
+
+fetch('./data/procurements.json?v='+Date.now())
+.then(r=>r.json())
+.then(d=>{
+ data=d;
+ draw();
+});
+
+function draw(){
+
+ const days = parseInt(document.getElementById("days").value||90);
+
+ const now = new Date();
+
+ const filtered = data.filter(i=>{
+   if(!i.contract_end_date) return false;
+   const d = parseDate(i.contract_end_date);
+   if(!d) return false;
+
+   const diff = (d-now)/(1000*60*60*24);
+
+   return diff > 0 && diff < days;
+ });
+
+ document.getElementById("results").innerHTML =
+ filtered.map(i=>`
+ <div class="card">
+   <b>${i.entity}</b> <span class="badge">PÄÄTTYMÄSSÄ</span>
+   <div>${i.title}</div>
+   <div>📅 ${i.contract_end_date}</div>
+   <a href="${i.url}" target="_blank">Avaa</a>
+ </div>
+ `).join("");
+
+}
+</script>
+</body>
+</html>
