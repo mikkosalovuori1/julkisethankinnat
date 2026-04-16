@@ -107,7 +107,7 @@ def extract_budget_value(text):
         r"(\d[\d\s]{1,15}\s?m€)"
     ]
 
-    trigger_words = ["budjetti", "määräraha", "arvioitu arvo", "kustannusarvio", "budjetoitu", "investointi"]
+    trigger_words = ["budjetti", "määräraha", "arvioitu arvo", "kustannusarvio", "budjetoitu", "investointi", "hinta", "arvo"]
     tl = t.lower()
 
     if not any(w in tl for w in trigger_words):
@@ -155,7 +155,7 @@ def fallback_tags(text, item_type):
     if any(x in text_l for x in ["it", "ict", "ohjelmisto", "järjestelmä", "api", "digitaal", "pilvipalvelu"]):
         theme_tags.append("IT ja digitalisaatio")
 
-    if any(x in text_l for x in ["rakentaminen", "urakka", "saneeraus", "peruskorjaus", "silta", "katu", "maanrakennus"]):
+    if any(x in text_l for x in ["rakentaminen", "urakka", "saneeraus", "peruskorjaus", "silta", "katu", "maanrakennus", "suunnittelu"]):
         theme_tags.append("Rakentaminen ja infra")
 
     if any(x in text_l for x in ["kulunvalvonta", "kamera", "vartiointi", "paloilmoitin", "turvallisuus"]):
@@ -205,20 +205,36 @@ def build_ai_summary(item_type, cpv_label, matched_keywords, signal_tags, pdf_te
 
     return " ".join(parts).strip()
 
-def extract_budget_line_items(item, cpv_rules, keyword_rules):
-    pdf_text = item.get("pdf_text", "") or ""
-    if not pdf_text or str(pdf_text).startswith("PDF_ERROR"):
-        return []
+def looks_like_procurement_candidate(line):
+    l = line.strip()
+    ll = l.lower()
 
-    item_type = item.get("item_type", "")
-    if item_type not in ["budjetti", "investointipäätös", "hankintasuunnitelma"]:
-        return []
+    if len(l) < 8:
+        return False
+    if len(l) > 220:
+        return False
 
-    lines = [re.sub(r"\s+", " ", line).strip() for line in pdf_text.splitlines()]
-    lines = [line for line in lines if line]
+    meaningful_words = [
+        "hankinta", "suunnittelu", "urakka", "palvelu", "järjestelmä",
+        "uusinta", "rakentaminen", "siivous", "kulunvalvonta", "keittiö",
+        "saneeraus", "peruskorjaus", "toimitus", "kilpailutus", "laite"
+    ]
 
-    generated = []
-    seen = set()
+    value_patterns = [
+        r"\d[\d\s]{1,15},\d{2}\s?€",
+        r"\d[\d\s]{1,15}\s?€",
+        r"\d[\d\s]{1,15}\s?eur",
+        r"\d[\d\s]{1,15}\s?milj\.?\s?€",
+        r"\d[\d\s]{1,15}\s?m€"
+    ]
+
+    has_meaningful_word = any(w in ll for w in meaningful_words)
+    has_money = any(re.search(p, l, flags=re.IGNORECASE) for p in value_patterns)
+
+    return has_meaningful_word or has_money
+
+def split_attachment_line(line):
+    l = " ".join(line.split())
 
     value_patterns = [
         r"(\d[\d\s]{1,15},\d{2}\s?€)",
@@ -228,37 +244,75 @@ def extract_budget_line_items(item, cpv_rules, keyword_rules):
         r"(\d[\d\s]{1,15}\s?m€)"
     ]
 
+    value = ""
+    match = None
+    for p in value_patterns:
+        m = re.search(p, l, flags=re.IGNORECASE)
+        if m:
+            value = m.group(1).strip()
+            match = m
+            break
+
+    if match:
+        title = l[:match.start()].strip(" -–—:;,.")
+        desc = l[match.end():].strip(" -–—:;,.")
+    else:
+        title = l
+        desc = ""
+
+    title = re.sub(r"\s+", " ", title).strip()
+
+    if len(title) < 4:
+        return None
+    if len(title) > 160:
+        return None
+
+    if not desc:
+        desc = f"Poimittu liitetiedostosta: {title}"
+
+    return {
+        "title": title,
+        "description": desc[:300],
+        "value": value
+    }
+
+def extract_attachment_items(item, cpv_rules, keyword_rules):
+    pdf_text = item.get("pdf_text", "") or ""
+    if not pdf_text or str(pdf_text).startswith("PDF_ERROR"):
+        return []
+
+    lines = [re.sub(r"\s+", " ", line).strip() for line in pdf_text.splitlines()]
+    lines = [line for line in lines if line]
+
+    generated = []
+    seen = set()
+
     for idx, line in enumerate(lines):
-        if len(line) < 10:
+        if not looks_like_procurement_candidate(line):
             continue
 
-        value = ""
-        for pattern in value_patterns:
-            m = re.search(pattern, line, flags=re.IGNORECASE)
-            if m:
-                value = m.group(1).strip()
-                break
-
-        if not value:
+        parsed_line = split_attachment_line(line)
+        if not parsed_line:
             continue
 
-        title = re.sub(r"(\d[\d\s]{1,15},\d{2}\s?€|\d[\d\s]{1,15}\s?€|\d[\d\s]{1,15}\s?eur|\d[\d\s]{1,15}\s?milj\.?\s?€|\d[\d\s]{1,15}\s?m€)", "", line, flags=re.IGNORECASE).strip(" -–—:;,.")
-        title = re.sub(r"\s+", " ", title).strip()
-
-        if len(title) < 4:
+        title_key = parsed_line["title"].lower()
+        if title_key in seen:
             continue
-        if len(title) > 180:
-            continue
-
-        lower_title = title.lower()
-        if lower_title in seen:
-            continue
-        seen.add(lower_title)
+        seen.add(title_key)
 
         context_lines = lines[max(0, idx-1):min(len(lines), idx+2)]
         context_text = " ".join(context_lines)
 
+        # suodatetaan pois erittäin geneerisiä rivejä
+        if len(parsed_line["title"].split()) < 2 and not parsed_line["value"]:
+            continue
+
         cpv, cpv_label = find_cpv(context_text, cpv_rules)
+        item_type = classify_type(context_text)
+        deadline_at = extract_deadline(context_text)
+        contract_end = extract_contract_end(context_text)
+        budget_value = parsed_line["value"] or extract_budget_value(context_text)
+
         matched_keywords, theme_tags, signal_tags = extract_keyword_tags(context_text, keyword_rules)
         fb_themes, fb_signals = fallback_tags(context_text, item_type)
 
@@ -269,15 +323,13 @@ def extract_budget_line_items(item, cpv_rules, keyword_rules):
             if s not in signal_tags:
                 signal_tags.append(s)
 
-        if "poimittu budjettidokumentista" not in signal_tags:
-            signal_tags.append("poimittu budjettidokumentista")
-        if "budjetoitu" not in signal_tags:
-            signal_tags.append("budjetoitu")
+        if "poimittu liitetiedostosta" not in signal_tags:
+            signal_tags.append("poimittu liitetiedostosta")
 
         if not theme_tags:
             theme_tags = ["Muut hankinnat"]
 
-        child_id = f"{item.get('id','budget')}-budget-item-{idx}"
+        child_id = f"{item.get('id','attachment')}-attachment-item-{idx}"
 
         generated.append({
             "id": child_id,
@@ -286,43 +338,44 @@ def extract_budget_line_items(item, cpv_rules, keyword_rules):
             "area": item.get("area", ""),
             "source_name": item.get("source_name", ""),
             "source_page": item.get("source_page", ""),
-            "title": title,
+            "title": parsed_line["title"],
             "url": item.get("url", ""),
             "document_url": item.get("document_url", ""),
-            "type_hint": "budjettirivi",
+            "type_hint": "liitepoiminta",
             "pdf_text": item.get("pdf_text", ""),
             "found_at": item.get("found_at", ""),
             "last_seen_at": item.get("last_seen_at", ""),
             "is_new": item.get("is_new", False),
             "published_at": item.get("published_at", item.get("found_at", "")),
-            "deadline_at": extract_deadline(context_text),
-            "contract_end_date": "",
-            "estimated_budget_value": value,
+            "deadline_at": deadline_at,
+            "contract_end_date": contract_end,
+            "estimated_budget_value": budget_value,
             "cpv_primary": cpv,
             "cpv_label": cpv_label,
-            "item_type": "budjetti",
+            "item_type": item_type if item_type != "muu hankintatieto" else "poimittu hankinta",
             "matched_keywords": matched_keywords,
             "theme_tags": theme_tags,
             "signal_tags": signal_tags,
             "source_domain": item.get("source_domain", ""),
-            "ai_summary": f"Poimittu budjettidokumentista. {context_text[:350]}",
+            "ai_summary": parsed_line["description"],
             "search_text": " ".join([
-                title,
+                parsed_line["title"],
+                parsed_line["description"],
                 context_text,
-                value,
+                budget_value,
                 " ".join(matched_keywords),
                 " ".join(theme_tags),
                 " ".join(signal_tags),
                 cpv,
                 cpv_label,
-                "budjetti"
+                item_type
             ]).lower(),
-            "generated_from_budget": True,
-            "parent_budget_id": item.get("id", ""),
-            "parent_budget_title": item.get("title", "")
+            "generated_from_attachment": True,
+            "parent_attachment_id": item.get("id", ""),
+            "parent_attachment_title": item.get("title", "")
         })
 
-    return generated[:40]
+    return generated[:60]
 
 procurements = load_json(PROCUREMENTS_FILE, [])
 cpv_rules = load_json(CPV_RULES_FILE, [])
@@ -386,9 +439,9 @@ for item in procurements:
         "signal_tags": signal_tags,
         "source_domain": source_domain,
         "ai_summary": ai_summary,
-        "generated_from_budget": item.get("generated_from_budget", False),
-        "parent_budget_id": item.get("parent_budget_id", ""),
-        "parent_budget_title": item.get("parent_budget_title", ""),
+        "generated_from_attachment": item.get("generated_from_attachment", False),
+        "parent_attachment_id": item.get("parent_attachment_id", ""),
+        "parent_attachment_title": item.get("parent_attachment_title", ""),
         "search_text": " ".join([
             text,
             " ".join(matched_keywords),
@@ -403,10 +456,9 @@ for item in procurements:
 
     out.append(base_item)
 
-    for child in extract_budget_line_items(base_item, cpv_rules, keyword_rules):
+    for child in extract_attachment_items(base_item, cpv_rules, keyword_rules):
         out.append(child)
 
-# poistetaan duplikaatit id:n perusteella
 unique = {}
 for item in out:
     key = item.get("id") or item.get("url")
