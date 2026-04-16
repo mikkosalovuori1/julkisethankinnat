@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<title>Hankinnan tiedot</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
+.wrap { max-width:1100px; margin:0 auto; padding:24px; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:18px; margin-bottom:16px; }
+.tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
+.theme { background:#0f766e; }
+.signal { background:#7c3aed; }
+.label { color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+.value { margin-bottom:14px; line-height:1.5; }
+input, button {
+  padding:10px; border-radius:10px;
+  border:1px solid #1f2937;
+  background:#111827; color:white;
+}
+button { background:#2563eb; cursor:pointer; }
+pre {
+  white-space:pre-wrap;
+  word-break:break-word;
+  background:#0f172a;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid #1f2937;
+}
+a { color:#60a5fa; }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div style="margin-bottom:16px;">
+    <a href="index.html">← Takaisin hakunäkymään</a>
+  </div>
+
+  <div id="app">Ladataan hankintaa...</div>
+</div>
+
+<script>
+function esc(v){
+  return String(v || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function getParam(name){
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name) || "";
+}
+
+function renderTags(items, cls){
+  return (items || []).map(t => `<span class="tag ${cls}">${esc(t)}</span>`).join("");
+}
+
+function makeSnippets(text, query){
+  if(!query) return "";
+  const q = query.toLowerCase();
+  const raw = String(text || "");
+  const lower = raw.toLowerCase();
+
+  let snippets = [];
+  let idx = 0;
+
+  while((idx = lower.indexOf(q, idx)) !== -1 && snippets.length < 10){
+    const start = Math.max(0, idx - 80);
+    const end = Math.min(raw.length, idx + q.length + 120);
+    let snippet = raw.slice(start, end);
+    snippet = snippet.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "ig");
+    snippet = snippet.replace(re, m => `<mark>${m}</mark>`);
+    snippets.push("..." + snippet + "...");
+    idx += q.length;
+  }
+
+  return snippets.join("<br><br>");
+}
+
+const itemId = getParam("id");
+
+fetch('./data/procurements.json?v=' + Date.now())
+.then(r => r.json())
+.then(data => {
+  const item = data.find(x => x.id === itemId || x.url === itemId);
+
+  if(!item){
+    document.getElementById("app").innerHTML = `<div class="card">Hankintaa ei löytynyt.</div>`;
+    return;
+  }
+
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <h1 style="margin-top:0;">${esc(item.title)}</h1>
+
+      <div class="label">Hankinnan kuvaus lyhyesti</div>
+      <div class="value">${esc(item.ai_summary || "Ei yhteenvetoa saatavilla.")}</div>
+
+      <div class="label">Hankintayksikkö</div>
+      <div class="value">${esc(item.entity)}</div>
+
+      <div class="label">Kategoria / CPV</div>
+      <div class="value">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</div>
+
+      <div class="label">Alue</div>
+      <div class="value">${esc(item.area)}</div>
+
+      <div class="label">Lähde</div>
+      <div class="value">${esc(item.source_name || item.source_domain || "-")}</div>
+
+      <div class="label">Hankinnan tila</div>
+      <div class="value">${esc(item.item_type || "-")}</div>
+
+      <div class="label">Julkaistu</div>
+      <div class="value">${esc(item.published_at || item.found_at || "-")}</div>
+
+      <div class="label">Määräaika</div>
+      <div class="value">${esc(item.deadline_at || "-")}</div>
+
+      <div class="label">Liitetiedostot</div>
+      <div class="value">
+        ${item.document_url ? `<a href="${esc(item.document_url)}" target="_blank">Avaa liitetiedosto</a>` : 'Ei liitetiedostoa tunnistettu'}
+        ${item.source_page ? ` · <a href="${esc(item.source_page)}" target="_blank">Alkuperäinen sivu</a>` : ''}
+        ${item.url ? ` · <a href="${esc(item.url)}" target="_blank">Suora linkki</a>` : ''}
+      </div>
+
+      ${(item.matched_keywords || []).length ? `
+        <div class="label">Avainsanat</div>
+        <div class="value">${renderTags(item.matched_keywords, "")}</div>
+      ` : ''}
+
+      ${(item.theme_tags || []).length ? `
+        <div class="label">Teemat</div>
+        <div class="value">${renderTags(item.theme_tags, "theme")}</div>
+      ` : ''}
+
+      ${(item.signal_tags || []).length ? `
+        <div class="label">Signaalit</div>
+        <div class="value">${renderTags(item.signal_tags, "signal")}</div>
+      ` : ''}
+    </div>
+
+    <div class="card">
+      <div class="label">Hae liitetiedoston tiedoista</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <input id="pdfQuery" placeholder="Kirjoita hakusana, esim. maisema, sopimus, määräaika" style="flex:1; min-width:260px;" />
+        <button id="pdfSearchBtn">Hae tiedostosta</button>
+      </div>
+
+      <div id="pdfSearchResults" class="value">Syötä hakusana ja paina “Hae tiedostosta”.</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Liitetiedoston teksti / sisältö</div>
+      <pre>${esc(item.pdf_text || "Liitetiedoston tekstiä ei ole saatavilla.")}</pre>
+    </div>
+  `;
+
+  const btn = document.getElementById("pdfSearchBtn");
+  const input = document.getElementById("pdfQuery");
+  const out = document.getElementById("pdfSearchResults");
+
+  btn.onclick = () => {
+    const query = input.value.trim();
+    if(!query){
+      out.innerHTML = "Kirjoita ensin hakusana.";
+      return;
+    }
+
+    const snippets = makeSnippets(item.pdf_text || "", query);
+    out.innerHTML = snippets || "Hakusanalla ei löytynyt osumia liitetiedoston tekstistä.";
+  };
+});
+</script>
+</body>
+</html>
