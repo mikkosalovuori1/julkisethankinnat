@@ -10225,5 +10225,744 @@
     "url": "https://www.forssa.fi/hankinnat",
     "matched_keywords": [],
     "search_text": "error: 404 client error: not found for url: https://www.forssa.fi/hankinnat/   https://www.forssa.fi/hankinnat https://www.forssa.fi/hankinnat  muut hankinnat ei erityistä signaalia   muu hankintatieto "
+  },
+  {
+    "id": "https://mikkeli.fi/wp-content/uploads/2025/04/Kaupunkikonsernin-hankintasaanto-KH-31032025.pdf-budget-item-72",
+    "title": "laissa määritellyn arvon ( alv 0 %) tai jos palvelu on kestoltaan vähintään 10 päivän työ",
+    "entity": "Mikkeli",
+    "unit_name": "Mikkeli",
+    "area": "Suomi",
+    "source_name": "Mikkeli",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:28.519153Z",
+    "source_page": "https://www.mikkeli.fi/hankinnat",
+    "url": "https://mikkeli.fi/wp-content/uploads/2025/04/Kaupunkikonsernin-hankintasaanto-KH-31032025.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "laissa määritellyn arvon ( alv 0 %) tai jos palvelu on kestoltaan vähintään 10 päivän työ − tämä koskee rakennusurakoita ja palveluhankintoja, joiden ennakoitu arvo on yli tilaajavastuu- laissa määritellyn arvon (9 000 € alv 0 %) tai jos palvelu on kestoltaan vähintään 10 päivän työ- suoritus ja työ tehdään tilaajan työtiloissa tai työkohteessa ja se liittyy tilaajan toiminnassa ta- 9 000 € it it ja digitalisaatio kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://mikkeli.fi/wp-content/uploads/2025/04/Kaupunkikonsernin-hankintasaanto-KH-31032025.pdf-budget-item-114",
+    "title": "• hankinnan arvo ylittää oa tai rakennusurakka yli oa",
+    "entity": "Mikkeli",
+    "unit_name": "Mikkeli",
+    "area": "Suomi",
+    "source_name": "Mikkeli",
+    "cpv_primary": "45450000",
+    "cpv_label": "Rakennusten viimeistelytyöt",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:28.519153Z",
+    "source_page": "https://www.mikkeli.fi/hankinnat",
+    "url": "https://mikkeli.fi/wp-content/uploads/2025/04/Kaupunkikonsernin-hankintasaanto-KH-31032025.pdf",
+    "matched_keywords": [
+      "urakka",
+      "it",
+      "tarjouspyyntö"
+    ],
+    "search_text": "• hankinnan arvo ylittää oa tai rakennusurakka yli oa • monivuotiseen sopimukseen tähtäävä palveluhankinta • hankinnan arvo ylittää 100 000 euroa tai rakennusurakka yli 300 000 euroa • hankinnan arvon alittaessa edelliset rajat, pyydetään tarvittaessa lausunto tarjouspyyntöluonnok- 100 000 eur urakka it tarjouspyyntö rakentaminen ja infra it ja digitalisaatio käynnissä kilpailutus tulossa poimittu budjettidokumentista budjetoitu 45450000 rakennusten viimeistelytyöt budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-18",
+    "title": "nostetaan oon. Pääsääntöisesti tämä raja koskee Liikelaitos",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "nostetaan oon. pääsääntöisesti tämä raja koskee liikelaitos koskevan hankintalain piirissä olevien hankintojen vähäisen hankinnan raja nostetaan 40 000 euroon. pääsääntöisesti tämä raja koskee liikelaitos salon veden hankintoja sekä liitteen e osalta työllisyyspalvelujen 40 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-49",
+    "title": "palveluissa oa ja rakennusurakoissa oa. Lisäksi",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "palveluissa oa ja rakennusurakoissa oa. lisäksi hankintalain mukaiset kansalliset kynnysarvot ovat tavaroissa ja palveluissa 60 000 euroa ja rakennusurakoissa 150 000 euroa. lisäksi hankintalaissa on kynnysarvot myös liitteen e hankinnoille eli sosiaali- ja 60 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-51",
+    "title": "terveyspalvelut, oa sekä muut erityiset palvelut, 300 000",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "85100000",
+    "cpv_label": "Terveyspalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it",
+      "terveys"
+    ],
+    "search_text": "terveyspalvelut, oa sekä muut erityiset palvelut, 300 000 hankintalaissa on kynnysarvot myös liitteen e hankinnoille eli sosiaali- ja terveyspalvelut, 400 000 euroa sekä muut erityiset palvelut, 300 000 euroa. liitteen e mukaiset hankinnat koskevat pääsääntöisesti sosiaali- ja 400 000 eur it terveys it ja digitalisaatio terveydenhuolto budjetoitu poimittu budjettidokumentista 85100000 terveyspalvelut budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-59",
+    "title": "oa ja rakennusurakoissa oa. Nämä kynnysarvot",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "oa ja rakennusurakoissa oa. nämä kynnysarvot erityisalojen hankintalain mukaan kynnysarvo tavaroissa ja palveluissa on 431 000 euroa ja rakennusurakoissa 5 404 000 euroa. nämä kynnysarvot koskevat esimerkiksi osaa liikennepalvelujen hankinnoista sekä liikelaitos 431 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-79",
+    "title": "arvioitu arvo ylittää oa. Mikäli hankinta tällä tasolla koskee",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "arvioitu arvo ylittää oa. mikäli hankinta tällä tasolla koskee salon veden johtokunta päättävät toimialojensa hankinnoista, joiden arvioitu arvo ylittää 150 000 euroa. mikäli hankinta tällä tasolla koskee useampaa toimialaa, hankintapäätöksen tekee kaupunginhallitus. 150 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-85",
+    "title": "päättävät toimialansa hankinnoista oon saakka. Mikäli hankinta",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "päättävät toimialansa hankinnoista oon saakka. mikäli hankinta johtaja, elinvoimajohtaja, tekninen johtaja) ja liikelaitoksen toimitusjohtaja päättävät toimialansa hankinnoista 150 000 euroon saakka. mikäli hankinta tällä tai tätä alemmalla tasolla koskee useampaa toimialaa, 150 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-103",
+    "title": "hankinnoista oon saakka",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [],
+    "search_text": "hankinnoista oon saakka hankintojen osalta tuotantopäällikkö päättävät palvelualueensa hankinnoista 80 000 euroon saakka. 4. palvelupäälliköt (kaupunginlakimies, hallintopäällikkö, viestintäpäällikkö, 80 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-108",
+    "title": "palvelualueensa hankinnoista oon saakka",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [],
+    "search_text": "palvelualueensa hankinnoista oon saakka maaseutupalvelupäällikkö, kaupunginpuutarhuri) päättävät palvelualueensa hankinnoista 40 000 euroon saakka. kulttuuripäällikkö voi delegoida salon museoiden teoshankintojen ja 40 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf-budget-item-112",
+    "title": "enintään oon saakka",
+    "entity": "Salo",
+    "unit_name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:21:55.574192Z",
+    "source_page": "https://www.salo.fi/hankinnat",
+    "url": "https://salo.fi/wp-content/uploads/2026/04/Salon-kaupungin-hankintavaltuudet-ja-rajat-vuodelle-2026.pdf",
+    "matched_keywords": [],
+    "search_text": "enintään oon saakka museonjohtajalle ja kirjaston kalustohankinnat kirjastopalvelupäällikölle enintään 80 000 euroon saakka. seuraavista hankinnoista päättävät erikseen nimetyt viranhaltijat ilman 80 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-76",
+    "title": "Hankintasäännössä määritellyn rajan oa ylittävissä hankinnoissa on käytettävä",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "48000000",
+    "cpv_label": "Ohjelmistopaketit ja tietojärjestelmät",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it",
+      "sähkö"
+    ],
+    "search_text": "hankintasäännössä määritellyn rajan oa ylittävissä hankinnoissa on käytettävä kaikissa tarjouskilpailuissa voi käyttää sähköistä hankintajärjestelmää. hankintasäännössä määritellyn rajan 10 000 euroa ylittävissä hankinnoissa on käytettävä sähköistä hankintajärjestelmää. 10 000 eur it sähkö it ja digitalisaatio energia budjetoitu poimittu budjettidokumentista 48000000 ohjelmistopaketit ja tietojärjestelmät budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-85",
+    "title": "1. oa tavarahankinnoissa, palveluhankinnoissa ja suunnittelukilpailuissa",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "71240000",
+    "cpv_label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it",
+      "suunnittelu"
+    ],
+    "search_text": "1. oa tavarahankinnoissa, palveluhankinnoissa ja suunnittelukilpailuissa kansalliset kynnysarvot ilman arvonlisäveroa laskettuna ovat: 1. 60 000 euroa tavarahankinnoissa, palveluhankinnoissa ja suunnittelukilpailuissa; 2. 150 000 euroa rakennusurakoissa; 60 000 eur it suunnittelu it ja digitalisaatio konsultointi budjetoitu poimittu budjettidokumentista 71240000 arkkitehti-, insinööri- ja suunnittelupalvelut budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-86",
+    "title": "2. oa rakennusurakoissa",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "71240000",
+    "cpv_label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it",
+      "suunnittelu"
+    ],
+    "search_text": "2. oa rakennusurakoissa 1. 60 000 euroa tavarahankinnoissa, palveluhankinnoissa ja suunnittelukilpailuissa; 2. 150 000 euroa rakennusurakoissa; 3. 400 000 euroa hankintalain liitteen e 1-4 kohdassa tarkoitettujen sosiaali- ja 150 000 eur it suunnittelu it ja digitalisaatio konsultointi budjetoitu poimittu budjettidokumentista 71240000 arkkitehti-, insinööri- ja suunnittelupalvelut budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-87",
+    "title": "3. oa hankintalain liitteen E 1-4 kohdassa tarkoitettujen sosiaali- ja",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "85100000",
+    "cpv_label": "Terveyspalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it",
+      "terveys"
+    ],
+    "search_text": "3. oa hankintalain liitteen e 1-4 kohdassa tarkoitettujen sosiaali- ja 2. 150 000 euroa rakennusurakoissa; 3. 400 000 euroa hankintalain liitteen e 1-4 kohdassa tarkoitettujen sosiaali- ja terveyspalveluja koskevissa hankinnoissa; 400 000 eur it terveys it ja digitalisaatio terveydenhuolto budjetoitu poimittu budjettidokumentista 85100000 terveyspalvelut budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-89",
+    "title": "4. oa hankintalain liitteessä E 5-15 kohdassa tarkoitettuja muita erityisiä palveluja",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "85100000",
+    "cpv_label": "Terveyspalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it",
+      "terveys"
+    ],
+    "search_text": "4. oa hankintalain liitteessä e 5-15 kohdassa tarkoitettuja muita erityisiä palveluja terveyspalveluja koskevissa hankinnoissa; 4. 300 000 euroa hankintalain liitteessä e 5-15 kohdassa tarkoitettuja muita erityisiä palveluja koskevissa hankinnoissa; 300 000 eur it terveys it ja digitalisaatio terveydenhuolto budjetoitu poimittu budjettidokumentista 85100000 terveyspalvelut budjetti"
+  },
+  {
+    "id": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf-budget-item-91",
+    "title": "5. oa käyttöoikeussopimuksissa",
+    "entity": "Kaarina",
+    "unit_name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:09.193191Z",
+    "source_page": "https://www.kaarina.fi/hankinnat",
+    "url": "https://www.kaarina.fi/sites/default/files/media/files/kaarinan_kaupungin_hankintasaanto_01092019-1.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "5. oa käyttöoikeussopimuksissa koskevissa hankinnoissa; 5. 500 000 euroa käyttöoikeussopimuksissa. eu-kynnysarvot päivittyvät vuosittain. voimassa olevat kynnysarvot näkyvät linkin kautta: 500 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://raisio.fi/sites/default/files/media/file/raision-kaupungin-hankintaohje_0.pdf-budget-item-101",
+    "title": "Cloudia Kilpailutus -hankintajärjestelmää, ja yli on suuruisissa tavara- ja",
+    "entity": "Raisio",
+    "unit_name": "Raisio",
+    "area": "Suomi",
+    "source_name": "Raisio",
+    "cpv_primary": "48000000",
+    "cpv_label": "Ohjelmistopaketit ja tietojärjestelmät",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:15.254975Z",
+    "source_page": "https://www.raisio.fi/hankinnat",
+    "url": "https://raisio.fi/sites/default/files/media/file/raision-kaupungin-hankintaohje_0.pdf",
+    "matched_keywords": [
+      "it",
+      "sähkö"
+    ],
+    "search_text": "cloudia kilpailutus -hankintajärjestelmää, ja yli on suuruisissa tavara- ja raision kaupunki käyttää kansalliset kynnysarvot ylittävissä hankinnoissa sähköistä cloudia kilpailutus -hankintajärjestelmää, ja yli 20 000 euron suuruisissa tavara- ja palveluhankinnoissa suositellaan cloudia kilpailutusjärjestelmän käyttöä. palvelu 20 000 eur it sähkö it ja digitalisaatio energia kilpailutus tulossa poimittu budjettidokumentista budjetoitu 48000000 ohjelmistopaketit ja tietojärjestelmät budjetti"
+  },
+  {
+    "id": "https://www.tornio.fi/wp-content/uploads/2025/01/kansallinen-hankinta_rakennusurakka.pdf-budget-item-5",
+    "title": "mukainen kynnysarvo on",
+    "entity": "Tornio",
+    "unit_name": "Tornio",
+    "area": "Suomi",
+    "source_name": "Tornio",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:28.618610Z",
+    "source_page": "https://www.tornio.fi/hankinnat",
+    "url": "https://www.tornio.fi/wp-content/uploads/2025/01/kansallinen-hankinta_rakennusurakka.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "mukainen kynnysarvo on rakennusurakoissa hankintalain mukainen kynnysarvo on 150 000 €. sen alittaviin urakoihin sovelletaan 150 000 € it it ja digitalisaatio investointivihje poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://www.imatra.fi/sites/default/files/2023-02/opas_yrittajajille_2023.pdf-budget-item-59",
+    "title": "pienhankintarajan, 20., suuruisista ja sen ylittävistä",
+    "entity": "Imatra",
+    "unit_name": "Imatra",
+    "area": "Suomi",
+    "source_name": "Imatra",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:22:35.499391Z",
+    "source_page": "https://www.imatra.fi/hankinnat",
+    "url": "https://www.imatra.fi/sites/default/files/2023-02/opas_yrittajajille_2023.pdf",
+    "matched_keywords": [
+      "it",
+      "hankintapäätös"
+    ],
+    "search_text": "pienhankintarajan, 20., suuruisista ja sen ylittävistä imatran kaupunginvaltuuston vahvistama pienhankintarajan, 20.000 €, suuruisista ja sen ylittävistä hankinnoista tehdään hankintapäätös. pääasiallisesti 000 € it hankintapäätös it ja digitalisaatio päätöksessä mennyt kilpailutus budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-43",
+    "title": "Alle on tavarat",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "71240000",
+    "cpv_label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it",
+      "suunnittelu"
+    ],
+    "search_text": "alle on tavarat noudattaen alle 10 000 euron tavarat, palvelut ja suunnittelukilpailut 10 000 eur it suunnittelu it ja digitalisaatio konsultointi budjetoitu poimittu budjettidokumentista 71240000 arkkitehti-, insinööri- ja suunnittelupalvelut budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-50",
+    "title": "Yli on, mutta alle",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [],
+    "search_text": "yli on, mutta alle tehdä suorahankintana yli 10 000 euron, mutta alle 30 000 euron tavarat, palvelut 10 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-51",
+    "title": "on tavarat, palvelut",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "71240000",
+    "cpv_label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it",
+      "suunnittelu"
+    ],
+    "search_text": "on tavarat, palvelut yli 10 000 euron, mutta alle 30 000 euron tavarat, palvelut ja suunnittelukilpailut tai 30 000 eur it suunnittelu it ja digitalisaatio konsultointi budjetoitu poimittu budjettidokumentista 71240000 arkkitehti-, insinööri- ja suunnittelupalvelut budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-63",
+    "title": "Alle on rakennus‐",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [],
+    "search_text": "alle on rakennus‐ johtajan päätös alle 150 000 euron rakennus‐ urakat 150 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-66",
+    "title": "Yli on rakennus‐",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [],
+    "search_text": "yli on rakennus‐ x yli 30 000 euron rakennus‐ urakat. lautakunnan tai 30 000 eur  muut hankinnat budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-74",
+    "title": "sopimukset ja sitoumukset, joiden arvonlisäveroton arvo ei ylitä oa",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "sopimukset ja sitoumukset, joiden arvonlisäveroton arvo ei ylitä oa hallintosäännön mukaisesti kaupunginjohtaja on oikeutettu hyväksymään hankinnat, sopimukset ja sitoumukset, joiden arvonlisäveroton arvo ei ylitä 60 000 euroa. toimialajohtajat ovat oikeutettuja hyväksymään hankinnat, joiden arvonlisäveroton arvo ei 60 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-76",
+    "title": "ylitä oa. Vastuualueiden päälliköt ja rehtorit ovat oikeutettuja hyväksymään",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "ylitä oa. vastuualueiden päälliköt ja rehtorit ovat oikeutettuja hyväksymään toimialajohtajat ovat oikeutettuja hyväksymään hankinnat, joiden arvonlisäveroton arvo ei ylitä 30 000 euroa. vastuualueiden päälliköt ja rehtorit ovat oikeutettuja hyväksymään hankinnat, joiden arvonlisäveroton arvo ei ylitä 15 000 euroa. toimialajohtaja vastaa 30 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-77",
+    "title": "hankinnat, joiden arvonlisäveroton arvo ei ylitä oa. Toimialajohtaja vastaa",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "hankinnat, joiden arvonlisäveroton arvo ei ylitä oa. toimialajohtaja vastaa ylitä 30 000 euroa. vastuualueiden päälliköt ja rehtorit ovat oikeutettuja hyväksymään hankinnat, joiden arvonlisäveroton arvo ei ylitä 15 000 euroa. toimialajohtaja vastaa kuitenkin hankintamenettelyn oikeellisuudesta ja määrärahojen riittävyydestä. 15 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-81",
+    "title": "oa, kaupunginjohtajalla ja toimialajohtajilla on valtuudet hyväksyä työt, joiden",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "oa, kaupunginjohtajalla ja toimialajohtajilla on valtuudet hyväksyä työt, joiden nettomeno (hankintahinta vähennettynä saaduilla vakuutuskorvauksilla) on enintään 2 000 euroa, kaupunginjohtajalla ja toimialajohtajilla on valtuudet hyväksyä työt, joiden netto- meno on alle 10 000 euroa, kaupunginhallituksella ja lautakunnalla on valtuudet 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-82",
+    "title": "netto- meno on alle oa, kaupunginhallituksella ja lautakunnalla on valtuudet",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "netto- meno on alle oa, kaupunginhallituksella ja lautakunnalla on valtuudet 000 euroa, kaupunginjohtajalla ja toimialajohtajilla on valtuudet hyväksyä työt, joiden netto- meno on alle 10 000 euroa, kaupunginhallituksella ja lautakunnalla on valtuudet hyväksyä työt, joiden nettomeno on yli 10 000 euroa. 10 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-83",
+    "title": "hyväksyä työt, joiden nettomeno on yli oa",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "hyväksyä työt, joiden nettomeno on yli oa netto- meno on alle 10 000 euroa, kaupunginhallituksella ja lautakunnalla on valtuudet hyväksyä työt, joiden nettomeno on yli 10 000 euroa. pienhankinnat tehdään hyvää hankintatapaa noudattaen seuraavasti: 10 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-127",
+    "title": "o alle 10.on hankinnoissa ei vaadita erillistä dokumentointia laskun",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "o alle 10.on hankinnoissa ei vaadita erillistä dokumentointia laskun kirjallisesti dokumentoida päätöspöytäkirjaan o alle 10.000 euron hankinnoissa ei vaadita erillistä dokumentointia laskun hyväksymisen lisäksi 000 eur it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf-budget-item-132",
+    "title": "mukaisesti kilpailutettavista yli on ja kynnysarvon ylittävistä hankinnoista pois",
+    "entity": "Ulvila",
+    "unit_name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:10.836159Z",
+    "source_page": "https://www.ulvila.fi/hankinnat",
+    "url": "https://www.ulvila.fi/wp-content/uploads/2023/02/Pienhankintaohje-kh-6.2.2023-%C2%A7-42.pdf",
+    "matched_keywords": [
+      "it",
+      "verkko"
+    ],
+    "search_text": "mukaisesti kilpailutettavista yli on ja kynnysarvon ylittävistä hankinnoista pois ulvilan kaupungin verkkosivulla hankinnat -sivulla ilmoitetaan hankintalain hengen mukaisesti kilpailutettavista yli 10 000 euron ja kynnysarvon ylittävistä hankinnoista pois lukien ”ei julkisina” käsiteltävät hankinnat. 10 000 eur it verkko it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-40",
+    "title": "60.oa",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "71240000",
+    "cpv_label": "Arkkitehti-, insinööri- ja suunnittelupalvelut",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [
+      "it",
+      "suunnittelu"
+    ],
+    "search_text": "60.oa suunnittelukilpailut 60.000 euroa rakennusurakat 150.000 euroa 000 eur it suunnittelu it ja digitalisaatio konsultointi kilpailutus tulossa poimittu budjettidokumentista budjetoitu 71240000 arkkitehti-, insinööri- ja suunnittelupalvelut budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-41",
+    "title": "Rakennusurakat 150.oa",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "rakennusurakat 150.oa 60.000 euroa rakennusurakat 150.000 euroa muut erityiset palveluhankinnat (hankintalain liitteessä e määritel- 000 eur it it ja digitalisaatio kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-44",
+    "title": "300.oa",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [],
+    "search_text": "300.oa lyt palvelut) 300.000 euroa käyttöoikeussopimukset 500.000 euroa 000 eur  muut hankinnat kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-45",
+    "title": "Käyttöoikeussopimukset 500.oa",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [],
+    "search_text": "käyttöoikeussopimukset 500.oa 300.000 euroa käyttöoikeussopimukset 500.000 euroa 4 000 eur  muut hankinnat kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-111",
+    "title": "Hankinnan arvo 10.oa tai alle (alv 0)",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [
+      "it",
+      "sähkö"
+    ],
+    "search_text": "hankinnan arvo 10.oa tai alle (alv 0) 3.2 oikean menettelytavan valitseminen hankinnan arvo 10.000 euroa tai alle (alv 0) • ei tarvitse kilpailuttaa, mutta on suositeltavaa tehdä hintavertailua esimerkiksi sähköpostilla 000 eur it sähkö it ja digitalisaatio energia kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf-budget-item-115",
+    "title": "Hankinnan arvo yli 10.oa, mutta alle kansallisten kynnysarvojen (alv 0)",
+    "entity": "Lieksa",
+    "unit_name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:22.674578Z",
+    "source_page": "https://www.lieksa.fi/hankinnat",
+    "url": "https://lieksa.fi/wp-content/uploads/2025/11/Lieksan-kaupungin-pienhankintaohje-2026.pdf",
+    "matched_keywords": [
+      "it",
+      "hankintapäätös"
+    ],
+    "search_text": "hankinnan arvo yli 10.oa, mutta alle kansallisten kynnysarvojen (alv 0) • ei tarvita viranhaltijan hankintapäätöstä. tilaus toimii dokumenttina. hankinnan arvo yli 10.000 euroa, mutta alle kansallisten kynnysarvojen (alv 0) • kilpailutetaan, jos suorahankinnalle ei ole perustetta. 000 eur it hankintapäätös it ja digitalisaatio päätöksessä mennyt kilpailutus kilpailutus tulossa poimittu budjettidokumentista budjetoitu   budjetti"
+  },
+  {
+    "id": "https://suonenjoki.fi/wp-content/uploads/2023/05/2023241-Hankintastrategia.pdf-budget-item-118",
+    "title": "Alle kansallisen kynnysarvon, mutta yli arvoisista hankinnoista päättää kaupunginjohtaja",
+    "entity": "Suonenjoki",
+    "unit_name": "Suonenjoki",
+    "area": "Suomi",
+    "source_name": "Suonenjoki",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:25.518639Z",
+    "source_page": "https://www.suonenjoki.fi/hankinnat",
+    "url": "https://suonenjoki.fi/wp-content/uploads/2023/05/2023241-Hankintastrategia.pdf",
+    "matched_keywords": [
+      "it"
+    ],
+    "search_text": "alle kansallisen kynnysarvon, mutta yli arvoisista hankinnoista päättää kaupunginjohtaja kansallisen kynnysarvon1 ylittävissä hankinnoissa päätöksen tekee kaupunginhallitus tai lautakunta. alle kansallisen kynnysarvon, mutta yli 25 000 € arvoisista hankinnoista päättää kaupunginjohtaja tai toimialajohtaja. kaupunginhallituksen tai lautakunnan päätöksellä voidaan kaupunginjohtaja t ai 25 000 € it it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
+  },
+  {
+    "id": "https://suonenjoki.fi/wp-content/uploads/2023/05/2023241-Hankintastrategia.pdf-budget-item-122",
+    "title": "Alle :n hankinnoista päättävät toimialajohtajien lisäksi toimialojen palvelupäälliköt",
+    "entity": "Suonenjoki",
+    "unit_name": "Suonenjoki",
+    "area": "Suomi",
+    "source_name": "Suonenjoki",
+    "cpv_primary": "",
+    "cpv_label": "",
+    "item_type": "budjetti",
+    "published_at": "2026-04-16T13:23:25.518639Z",
+    "source_page": "https://www.suonenjoki.fi/hankinnat",
+    "url": "https://suonenjoki.fi/wp-content/uploads/2023/05/2023241-Hankintastrategia.pdf",
+    "matched_keywords": [
+      "it",
+      "talousarvio"
+    ],
+    "search_text": "alle :n hankinnoista päättävät toimialajohtajien lisäksi toimialojen palvelupäälliköt hankinnoista. alle 25 000 €:n hankinnoista päättävät toimialajohtajien lisäksi toimialojen palvelupäälliköt talousarvion puitteissa. 25 000 € it talousarvio it ja digitalisaatio budjetoitu poimittu budjettidokumentista   budjetti"
   }
 ]
