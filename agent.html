@@ -114,6 +114,11 @@
       padding:12px;
       margin-top:10px;
     }
+    code {
+      background:#0f172a;
+      padding:2px 6px;
+      border-radius:6px;
+    }
   </style>
 </head>
 <body>
@@ -123,17 +128,19 @@
     <div class="panel">
       <div>Käytä hakuja näin:</div>
       <ul>
-        <li><b>keittiösuunnittelu</b></li>
-        <li><b>keittiösuunnittelu tai keittiö</b></li>
-        <li><b>kulunvalvonta ja koulu</b></li>
-        <li><b>siivous ja sopimus</b></li>
+        <li><code>keittiösuunnittelu</code></li>
+        <li><code>keittiösuunnittelu tai keittiö</code></li>
+        <li><code>kulunvalvonta ja koulu</code></li>
+        <li><code>(keittiösuunnittelu tai keittiö) ja koulu</code></li>
+        <li><code>(siivous tai puhtaanapito) ja sopimus</code></li>
       </ul>
 
       <div class="logic-box">
         <div><b>Logiikka:</b></div>
         <div class="muted" style="margin-top:6px;">
-          <b>ja</b> = kaikkien sanojen pitää löytyä samasta hankinnasta<br>
-          <b>tai</b> = riittää että jokin termeistä löytyy
+          <b>ja</b> / <b>AND</b> = kaikkien ehtojen pitää täyttyä<br>
+          <b>tai</b> / <b>OR</b> = riittää että yksi ehto täyttyy<br>
+          <b>( )</b> = ryhmittely
         </div>
       </div>
     </div>
@@ -142,7 +149,7 @@
       <div class="row">
         <div style="flex:2; min-width:280px;">
           <label class="muted">Kysy agentilta</label>
-          <textarea id="question" rows="4" placeholder="Esim. keittiösuunnittelu tai keittiö"></textarea>
+          <textarea id="question" rows="4" placeholder="Esim. (keittiösuunnittelu tai keittiö) ja koulu"></textarea>
         </div>
         <div>
           <label class="muted">Tallenna hakuprofiiliksi</label>
@@ -174,19 +181,6 @@
         .replaceAll('"', "&quot;");
     }
 
-    function parseDateValue(v) {
-      if (!v) return null;
-      if (String(v).includes(".")) {
-        const parts = String(v).split(".");
-        if (parts.length === 3) {
-          const [day, month, year] = parts;
-          return new Date(year, month - 1, day);
-        }
-      }
-      const d = new Date(v);
-      return isNaN(d.getTime()) ? null : d;
-    }
-
     function formatRelevantDate(item) {
       return item.deadline_at || item.contract_end_date || item.published_at || item.found_at || "-";
     }
@@ -199,54 +193,150 @@
       ].join(" ").toLowerCase();
     }
 
-    function splitTerms(query) {
-      return query
-        .split(/\s+/)
-        .map(x => x.trim())
-        .filter(Boolean);
+    function tokenizeQuery(query) {
+      const normalized = String(query || "")
+        .replace(/\bAND\b/gi, " ja ")
+        .replace(/\bOR\b/gi, " tai ")
+        .replace(/\(/g, " ( ")
+        .replace(/\)/g, " ) ")
+        .trim();
+
+      const rawTokens = normalized.split(/\s+/).filter(Boolean);
+
+      const tokens = [];
+      let phrase = [];
+
+      function flushPhrase() {
+        if (phrase.length) {
+          tokens.push({ type: "TERM", value: phrase.join(" ").trim().toLowerCase() });
+          phrase = [];
+        }
+      }
+
+      for (const tok of rawTokens) {
+        const lower = tok.toLowerCase();
+
+        if (lower === "(") {
+          flushPhrase();
+          tokens.push({ type: "LPAREN", value: "(" });
+        } else if (lower === ")") {
+          flushPhrase();
+          tokens.push({ type: "RPAREN", value: ")" });
+        } else if (lower === "ja") {
+          flushPhrase();
+          tokens.push({ type: "AND", value: "ja" });
+        } else if (lower === "tai") {
+          flushPhrase();
+          tokens.push({ type: "OR", value: "tai" });
+        } else {
+          phrase.push(tok);
+        }
+      }
+
+      flushPhrase();
+      return tokens;
     }
 
-    function parseLogicalQuery(query) {
-      const q = String(query || "").trim().toLowerCase();
+    function insertImplicitAnd(tokens) {
+      const out = [];
 
-      if (!q) {
-        return { mode: "single", terms: [] };
+      function isOperandEnd(t) {
+        return t && (t.type === "TERM" || t.type === "RPAREN");
       }
 
-      if (q.includes(" tai ")) {
-        return {
-          mode: "or",
-          terms: q.split(/\s+tai\s+/i).map(s => s.trim()).filter(Boolean)
-        };
+      function isOperandStart(t) {
+        return t && (t.type === "TERM" || t.type === "LPAREN");
       }
 
-      if (q.includes(" ja ")) {
-        return {
-          mode: "and",
-          terms: q.split(/\s+ja\s+/i).map(s => s.trim()).filter(Boolean)
-        };
+      for (let i = 0; i < tokens.length; i++) {
+        const curr = tokens[i];
+        const prev = out[out.length - 1];
+
+        if (isOperandEnd(prev) && isOperandStart(curr)) {
+          out.push({ type: "AND", value: "ja" });
+        }
+
+        out.push(curr);
       }
 
-      return {
-        mode: "single",
-        terms: [q]
-      };
+      return out;
     }
 
-    function matchLogicalQuery(item, parsed) {
-      const text = searchableText(item);
+    function toRPN(tokens) {
+      const output = [];
+      const stack = [];
+      const precedence = { OR: 1, AND: 2 };
 
-      if (!parsed.terms.length) return false;
-
-      if (parsed.mode === "or") {
-        return parsed.terms.some(term => text.includes(term));
+      for (const token of tokens) {
+        if (token.type === "TERM") {
+          output.push(token);
+        } else if (token.type === "AND" || token.type === "OR") {
+          while (
+            stack.length &&
+            (stack[stack.length - 1].type === "AND" || stack[stack.length - 1].type === "OR") &&
+            precedence[stack[stack.length - 1].type] >= precedence[token.type]
+          ) {
+            output.push(stack.pop());
+          }
+          stack.push(token);
+        } else if (token.type === "LPAREN") {
+          stack.push(token);
+        } else if (token.type === "RPAREN") {
+          while (stack.length && stack[stack.length - 1].type !== "LPAREN") {
+            output.push(stack.pop());
+          }
+          if (!stack.length) {
+            throw new Error("Sulut eivät täsmää.");
+          }
+          stack.pop();
+        }
       }
 
-      if (parsed.mode === "and") {
-        return parsed.terms.every(term => text.includes(term));
+      while (stack.length) {
+        const top = stack.pop();
+        if (top.type === "LPAREN" || top.type === "RPAREN") {
+          throw new Error("Sulut eivät täsmää.");
+        }
+        output.push(top);
       }
 
-      return text.includes(parsed.terms[0]);
+      return output;
+    }
+
+    function parseExpression(query) {
+      const tokens = insertImplicitAnd(tokenizeQuery(query));
+
+      if (!tokens.length) {
+        return { rpn: [], terms: [] };
+      }
+
+      const rpn = toRPN(tokens);
+      const terms = [...new Set(
+        tokens.filter(t => t.type === "TERM").map(t => t.value.toLowerCase())
+      )];
+
+      return { rpn, terms };
+    }
+
+    function evaluateRPN(rpn, text) {
+      const stack = [];
+
+      for (const token of rpn) {
+        if (token.type === "TERM") {
+          stack.push(text.includes(token.value.toLowerCase()));
+        } else if (token.type === "AND") {
+          const b = stack.pop();
+          const a = stack.pop();
+          stack.push(Boolean(a && b));
+        } else if (token.type === "OR") {
+          const b = stack.pop();
+          const a = stack.pop();
+          stack.push(Boolean(a || b));
+        }
+      }
+
+      if (stack.length !== 1) return false;
+      return Boolean(stack[0]);
     }
 
     function makeHighlightedSnippets(text, terms) {
@@ -329,14 +419,14 @@
 
     function loadProfiles() {
       try {
-        return JSON.parse(localStorage.getItem("hankinta_profiles_v2") || "[]");
+        return JSON.parse(localStorage.getItem("hankinta_profiles_v3") || "[]");
       } catch {
         return [];
       }
     }
 
     function saveProfiles(profiles) {
-      localStorage.setItem("hankinta_profiles_v2", JSON.stringify(profiles));
+      localStorage.setItem("hankinta_profiles_v3", JSON.stringify(profiles));
     }
 
     function renderProfiles(runSearch) {
@@ -400,10 +490,17 @@
 
         question.value = q;
 
-        const parsed = parseLogicalQuery(q);
+        let parsed;
+        try {
+          parsed = parseExpression(q);
+        } catch (err) {
+          answer.textContent = `Hakuehto on virheellinen: ${err.message}`;
+          results.innerHTML = "";
+          return;
+        }
 
         const hits = dataset
-          .filter(item => matchLogicalQuery(item, parsed))
+          .filter(item => evaluateRPN(parsed.rpn, searchableText(item)))
           .map(item => {
             const snippets = makeHighlightedSnippets(item.pdf_text || "", parsed.terms);
             return {
@@ -416,7 +513,7 @@
           .slice(0, 12);
 
         if (!hits.length) {
-          answer.textContent = `En löytänyt osumia haulle "${q}". Haku kohdistuu vain otsikkoon, kuvaukseen, sisältöön ja liitetiedoston tekstiin.`;
+          answer.textContent = `En löytänyt osumia haulle "${q}". Haku kohdistuu vain otsikkoon, kuvaukseen ja liitetiedoston tekstiin.`;
           results.innerHTML = "";
           return;
         }
@@ -430,7 +527,7 @@
         answer.innerHTML = `
           <div><b>Löysin ${hits.length} osumaa haulle:</b> ${esc(q)}</div>
           <div class="muted" style="margin-top:6px;">
-            Haku käyttää vain hankinnan otsikkoa, kuvausta, sisältöä ja liitetiedoston tekstiä. Metadataa ei käytetä osumien löytämiseen.
+            Haku käyttää vain hankinnan otsikkoa, kuvausta ja liitetiedoston tekstiä. Sulut, "ja"/"tai", AND/OR ovat käytössä.
           </div>
           <div style="margin-top:10px;">Yhteenveto tyypeittäin:</div>
           <div style="margin-top:6px;">
@@ -441,7 +538,7 @@
         results.innerHTML = hits.map(item => {
           const snippetsHtml = item._snippets.length
             ? item._snippets.map(s => `<div style="margin-bottom:10px;">${s}</div>`).join("")
-            : `<div class="muted">Hakutermi löytyi otsikosta, kuvauksesta tai sisällöstä, mutta ei suoraa osumaa liitetiedoston tekstissä.</div>`;
+            : `<div class="muted">Hakuehto osui otsikkoon tai kuvaukseen, mutta ei suoraan liitetiedoston tekstissä näkyvään kohtaan.</div>`;
 
           return `
             <div class="result-card">
