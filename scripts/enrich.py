@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -12,20 +13,41 @@ def load_json(path, default):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+# 🔥 UUSI: päivämäärän tunnistus
+def extract_contract_end(text):
+    if not text:
+        return ""
+
+    patterns = [
+        r"(\d{1,2}\.\d{1,2}\.\d{4})",
+        r"(\d{4}-\d{2}-\d{2})"
+    ]
+
+    for p in patterns:
+        matches = re.findall(p, text)
+        for m in matches:
+            if any(x in text.lower() for x in ["päättyy", "voimassa", "sopimus", "asti"]):
+                return m
+
+    return ""
+
 def classify_type(text):
     t = text.lower()
 
-    if any(x in t for x in ["talousarvio", "budjetti", "määräraha"]):
+    if "sopimus" in t and "päätty" in t:
+        return "sopimus päättymässä"
+
+    if any(x in t for x in ["budjetti","määräraha"]):
         return "budjetti"
-    if any(x in t for x in ["investointi", "investointiohjelma", "investointipäätös"]):
+    if "investointi" in t:
         return "investointipäätös"
-    if any(x in t for x in ["hankintasuunnitelma", "suunnitelma", "kilpailutetaan vuonna"]):
+    if "suunnitelma" in t:
         return "hankintasuunnitelma"
-    if any(x in t for x in ["hankintakalenteri", "kalenteri"]):
+    if "kalenteri" in t:
         return "hankintakalenteritieto"
-    if any(x in t for x in ["tarjouspyyntö", "jätä tarjous", "määräaika", "kilpailutus", "hankintailmoitus"]):
+    if any(x in t for x in ["tarjous","kilpailutus"]):
         return "käynnissä oleva hankinta"
-    if any(x in t for x in ["valittu toimittaja", "hankintapäätös", "päätös", "myönnetty", "sopimus tehty"]):
+    if any(x in t for x in ["päätös","valittu"]):
         return "mennyt kilpailutus"
 
     return "muu hankintatieto"
@@ -35,91 +57,45 @@ def find_cpv(text, rules):
     matches = []
 
     for rule in rules:
-        hit_count = 0
-        for kw in rule["keywords"]:
-            if kw.lower() in text_l:
-                hit_count += 1
+        score = sum(1 for kw in rule["keywords"] if kw.lower() in text_l)
+        if score:
+            matches.append((score, rule))
 
-        if hit_count > 0:
-            matches.append({
-                "cpv": rule["cpv"],
-                "label": rule["label"],
-                "score": hit_count
-            })
-
-    matches.sort(key=lambda x: x["score"], reverse=True)
+    matches.sort(reverse=True)
 
     if matches:
-        primary = matches[0]
-        secondary = [m["cpv"] for m in matches[1:4]]
-        confidence = min(0.55 + primary["score"] * 0.12, 0.97)
-        return primary["cpv"], primary["label"], secondary, round(confidence, 2)
+        best = matches[0][1]
+        return best["cpv"], best["label"]
 
-    return "", "", [], 0.0
-
-def extract_keywords(text, rules):
-    text_l = text.lower()
-    hits = []
-
-    for rule in rules:
-        for kw in rule["keywords"]:
-            if kw.lower() in text_l and kw not in hits:
-                hits.append(kw)
-
-    return hits[:20]
+    return "", ""
 
 procurements = load_json(PROCUREMENTS_FILE, [])
 rules = load_json(CPV_RULES_FILE, [])
 
-enriched = []
+out = []
 
 for item in procurements:
-    title = item.get("title", "")
-    source_page = item.get("source_page", "")
-    url = item.get("url", "")
-    type_hint = item.get("type_hint", "")
-    pdf_text = item.get("pdf_text", "")
 
-    combined_text = f"{title} {source_page} {url} {type_hint} {pdf_text}"
+    text = " ".join([
+        item.get("title",""),
+        item.get("pdf_text",""),
+        item.get("type_hint","")
+    ])
 
-    cpv_primary, cpv_label, cpv_secondary, cpv_confidence = find_cpv(combined_text, rules)
-    matched_keywords = extract_keywords(combined_text, rules)
-    item_type = classify_type(combined_text)
+    cpv, cpv_label = find_cpv(text, rules)
 
-    parsed = urlparse(url)
-    source_domain = parsed.netloc
+    contract_end = extract_contract_end(text)
 
-    ai_summary = ""
-    if pdf_text and not str(pdf_text).startswith("PDF_EXTRACT_ERROR"):
-        cleaned = " ".join(str(pdf_text).split())
-        ai_summary = cleaned[:700]
+    item_type = classify_type(text)
 
-    enriched.append({
+    out.append({
         **item,
-        "cpv_primary": cpv_primary,
+        "cpv_primary": cpv,
         "cpv_label": cpv_label,
-        "cpv_secondary": cpv_secondary,
-        "cpv_confidence": cpv_confidence,
-        "matched_keywords": matched_keywords,
         "item_type": item_type,
-        "published_at": item.get("found_at", ""),
-        "deadline_at": item.get("deadline_at", ""),
-        "document_file_name": url.split("/")[-1] if url else "",
-        "source_domain": source_domain,
-        "ai_summary": ai_summary,
-        "search_text": " ".join([
-            item.get("title", ""),
-            item.get("entity", ""),
-            item.get("unit_name", ""),
-            item.get("area", ""),
-            item.get("source_name", ""),
-            item_type,
-            cpv_primary,
-            cpv_label,
-            " ".join(matched_keywords),
-            str(pdf_text)
-        ]).lower()
+        "contract_end_date": contract_end,
+        "search_text": text.lower()
     })
 
-with open(PROCUREMENTS_FILE, "w", encoding="utf-8") as f:
-    json.dump(enriched, f, ensure_ascii=False, indent=2)
+with open(PROCUREMENTS_FILE,"w",encoding="utf-8") as f:
+    json.dump(out,f,ensure_ascii=False,indent=2)
