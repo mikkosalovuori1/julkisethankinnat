@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Akaan kaupunki",
+    "urls": [
+      "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/"
+    ]
+  },
+  {
+    "name": "Espoon kaupunki",
+    "urls": [
+      "https://www.espoo.fi/fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Oulun kaupunki",
+    "urls": [
+      "https://www.ouka.fi/hankinnat"
+    ]
+  }
+]
