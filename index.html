@@ -193,10 +193,8 @@ fetch('./data/procurements.json?v=' + Date.now())
       if(area.value && !(item.area || "").toLowerCase().includes(area.value.toLowerCase())) return false;
       if(entity.value && !(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
       if(type.value && item.item_type !== type.value) return false;
-
       if(themeFilter.value && !(Array.isArray(item.theme_tags) ? item.theme_tags : []).includes(themeFilter.value)) return false;
       if(signalFilter.value && !(Array.isArray(item.signal_tags) ? item.signal_tags : []).includes(signalFilter.value)) return false;
-
       if(newOnly.checked && !item.is_new) return false;
 
       const d = parseDate(item.published_at || item.found_at);
@@ -226,6 +224,7 @@ fetch('./data/procurements.json?v=' + Date.now())
           ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
           ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
           ${item.contract_end_date ? `<span class="tag signal">Päättyy ${esc(item.contract_end_date)}</span>` : ''}
+          ${item.deadline_at ? `<span class="tag">Määräaika ${esc(item.deadline_at)}</span>` : ''}
         </div>
 
         <div class="muted" style="margin-top:8px;">
@@ -253,7 +252,7 @@ fetch('./data/procurements.json?v=' + Date.now())
         ` : ''}
 
         <div style="margin-top:12px;">
-          <a href="${esc(item.url)}" target="_blank">Avaa</a>
+          <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
           ${item.document_url ? ` | <a href="${esc(item.document_url)}" target="_blank">PDF</a>` : ''}
           ${item.source_page ? ` | <a href="${esc(item.source_page)}" target="_blank">Lähdesivu</a>` : ''}
         </div>
