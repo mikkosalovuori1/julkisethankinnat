@@ -52,7 +52,6 @@ def find_cpv(text, rules):
         if score:
             matches.append((score, rule))
 
-    # Korjaus: lajitellaan vain score-arvolla, ei dict-olioita vertailemalla
     matches.sort(key=lambda x: x[0], reverse=True)
 
     if matches:
@@ -117,6 +116,46 @@ def extract_keyword_tags(text, keyword_rules):
 
     return matched_keywords[:25], theme_tags[:10], signal_tags[:10]
 
+def fallback_tags(text, item_type):
+    text_l = text.lower()
+    theme_tags = []
+    signal_tags = []
+
+    if any(x in text_l for x in ["it", "ict", "ohjelmisto", "järjestelmä", "api", "digitaal", "pilvipalvelu"]):
+        theme_tags.append("IT ja digitalisaatio")
+
+    if any(x in text_l for x in ["rakentaminen", "urakka", "saneeraus", "peruskorjaus", "silta", "katu", "maanrakennus"]):
+        theme_tags.append("Rakentaminen ja infra")
+
+    if any(x in text_l for x in ["kulunvalvonta", "kamera", "vartiointi", "paloilmoitin", "turvallisuus"]):
+        theme_tags.append("Turvallisuus")
+
+    if any(x in text_l for x in ["siivous", "kiinteistöhuolto", "ylläpito", "kunnossapito"]):
+        theme_tags.append("Kiinteistö ja ylläpito")
+
+    if any(x in text_l for x in ["terveys", "sairaala", "hoiva", "potilas"]):
+        theme_tags.append("Terveydenhuolto")
+
+    if any(x in text_l for x in ["koulu", "päiväkoti", "oppilaitos"]):
+        theme_tags.append("Koulutus")
+
+    if item_type == "budjetti":
+        signal_tags.append("budjetoitu")
+    if item_type == "investointipäätös":
+        signal_tags.append("investointivihje")
+    if item_type == "hankintasuunnitelma":
+        signal_tags.append("kilpailutus tulossa")
+    if item_type == "hankintakalenteritieto":
+        signal_tags.append("kilpailutus tulossa")
+    if item_type == "käynnissä oleva hankinta":
+        signal_tags.append("käynnissä")
+    if item_type == "mennyt kilpailutus":
+        signal_tags.append("mennyt kilpailutus")
+    if item_type == "sopimus päättymässä":
+        signal_tags.extend(["sopimus päättymässä", "uusintahankinta"])
+
+    return theme_tags, signal_tags
+
 def build_ai_summary(item_type, cpv_label, matched_keywords, signal_tags, pdf_text):
     parts = []
 
@@ -153,7 +192,24 @@ for item in procurements:
     cpv, cpv_label = find_cpv(text, cpv_rules)
     contract_end = extract_contract_end(text)
     item_type = classify_type(text)
+
     matched_keywords, theme_tags, signal_tags = extract_keyword_tags(text, keyword_rules)
+
+    fb_themes, fb_signals = fallback_tags(text, item_type)
+
+    for t in fb_themes:
+        if t not in theme_tags:
+            theme_tags.append(t)
+
+    for s in fb_signals:
+        if s not in signal_tags:
+            signal_tags.append(s)
+
+    if not theme_tags:
+        theme_tags = ["Muut hankinnat"]
+
+    if not signal_tags:
+        signal_tags = ["ei erityistä signaalia"]
 
     ai_summary = build_ai_summary(
         item_type=item_type,
