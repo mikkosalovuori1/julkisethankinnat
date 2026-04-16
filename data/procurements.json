@@ -1,30 +1,178 @@
 [
   {
     "entity": "Akaan kaupunki",
-    "title": "Uuden päiväkodin rakentaminen",
+    "title": "Hankinnat ja tarjouspyynnöt",
     "url": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
-    "found_at": "2026-04-16T10:00:00Z",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.255873Z",
     "is_new": true
   },
   {
     "entity": "Akaan kaupunki",
-    "title": "Toijalan alakoulun tilaajahankinnat",
-    "url": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
-    "found_at": "2026-04-16T10:05:00Z",
+    "title": "Etelä- ja Lounais-Pirkanmaan ilmastoekosysteemihanke",
+    "url": "https://akaa.fi/elinkeinot-ja-tyollisyys/palvelua-yrityksille/yrityksen-ilmastotyo/etela-ja-lounais-pirkanmaan-ilmastohanke/",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256318Z",
     "is_new": true
   },
   {
     "entity": "Akaan kaupunki",
-    "title": "Torkon alueen katujen saneerausurakka",
-    "url": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
-    "found_at": "2026-04-16T10:10:00Z",
+    "title": "Hankinnat",
+    "url": "https://akaa.fi/kategoria/hankinnat/",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256410Z",
     "is_new": true
   },
   {
     "entity": "Akaan kaupunki",
-    "title": "Torkontien sillan uusiminen",
-    "url": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
-    "found_at": "2026-04-16T10:15:00Z",
+    "title": "Hankintainfo yrittäjille perjantaina 16. helmikuuta",
+    "url": "https://akaa.fi/hankintainfo-yrittajille-perjantaina-16-helmikuuta/",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256456Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "Julkisia hankintoja - HILMA",
+    "url": "https://www.hankintailmoitukset.fi/fi/",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256577Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "Julkisia hankintoja - Cloudia",
+    "url": "https://tarjouspalvelu.fi/UX/TP/TarjouspyyntoListaus?p=964",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256592Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "VUODEN 2026 KILPAILUTUKSET HALLINTO (pdf)",
+    "url": "https://akaa.fi/wp-content/uploads/2025/12/VUODEN-2026-KILPAILUTUKSET-HALLINTO.pdf",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256609Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "VUODEN 2026 KILPAILUTUKSET KAUPUNKIKEHITYS (pdf)",
+    "url": "https://akaa.fi/wp-content/uploads/2025/12/VUODEN-2026-KILPAILUTUKSET-KAUPUNKIKEHITYSo.pdf",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256622Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "VUODEN 2026 KILPAILUTUKSET SIVISTYS (pdf)",
+    "url": "https://akaa.fi/wp-content/uploads/2025/12/VUODEN-2026-KILPAILUTUKSET-SIVISTYS.pdf",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256635Z",
+    "is_new": true
+  },
+  {
+    "entity": "Akaan kaupunki",
+    "title": "VUODEN 2026 KILPAILUTUKSET TEKNINEN (pdf)",
+    "url": "https://akaa.fi/wp-content/uploads/2025/12/VUODEN-2026-KILPAILUTUKSET-TEKNINEN.pdf",
+    "source_page": "https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/",
+    "found_at": "2026-04-16T09:43:12.256648Z",
+    "is_new": true
+  },
+  {
+    "entity": "Espoon kaupunki",
+    "title": "hankinta@espoo.fi",
+    "url": "mailto: hankinta@espoo.fi",
+    "source_page": "https://www.espoo.fi/fi/hankinnat",
+    "found_at": "2026-04-16T09:43:13.721195Z",
+    "is_new": true
+  },
+  {
+    "entity": "Espoon kaupunki",
+    "title": "hankintakalenterin",
+    "url": "https://www.espoo.fi/fi/tyoelama/business-espoo-yritysten-parhaaksi/tavoitteena-kasvu/hankinnat/espoon-kaupungin-hankintakalenteri",
+    "source_page": "https://www.espoo.fi/fi/hankinnat",
+    "found_at": "2026-04-16T09:43:13.721210Z",
+    "is_new": true
+  },
+  {
+    "entity": "Espoon kaupunki",
+    "title": "hankinnoillatyollistaminen@espoo.fi",
+    "url": "mailto:hankinnoillatyollistaminen@espoo.fi",
+    "source_page": "https://www.espoo.fi/fi/hankinnat",
+    "found_at": "2026-04-16T09:43:13.721230Z",
+    "is_new": true
+  },
+  {
+    "entity": "Espoon kaupunki",
+    "title": "UKK - Julkiset hankinnat -sivulle",
+    "url": "https://www.espoo.fi/fi/tyoelama/business-espoo-yritysten-parhaaksi/ukk-julkiset-hankinnat",
+    "source_page": "https://www.espoo.fi/fi/hankinnat",
+    "found_at": "2026-04-16T09:43:13.721244Z",
+    "is_new": true
+  },
+  {
+    "entity": "Espoon kaupunki",
+    "title": "hankinta@espoo.fi",
+    "url": "mailto:hankinta@espoo.fi",
+    "source_page": "https://www.espoo.fi/fi/hankinnat",
+    "found_at": "2026-04-16T09:43:13.721257Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "hankintalakia",
+    "url": "https://www.finlex.fi/fi/laki/ajantasa/2016/20161397",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110298Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "erityisalojen hankintalakia",
+    "url": "https://www.finlex.fi/fi/laki/ajantasa/2016/20161398",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110321Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "hankintakynnysarvoja",
+    "url": "https://www.hankinnat.fi/mika-julkinen-hankinta/kynnysarvot",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110334Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "hankintamääräyksiä",
+    "url": "https://www.ouka.fi/media/348/download",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110348Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "hankintaohjelma 2024-2028",
+    "url": "https://www.ouka.fi/media/8336/download",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110364Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "Oulun kaupungin hankintakalenteri",
+    "url": "https://app.powerbi.com/view?r=eyJrIjoiZGVjNDM0NGMtZDZhMy00ZGQwLWJhZTctNDdiYTFiMDRkZWM5IiwidCI6IjVjYzg5YTY3LWZhMjktNDM1Ni1hZjVkLWY0MzZhYmM3YzIxYiIsImMiOjl9",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110402Z",
+    "is_new": true
+  },
+  {
+    "entity": "Oulun kaupunki",
+    "title": "Hankintaneuvontaa Suomen Yrittäjien alueelliset hankintaneuvojat auttavat yrityksiä julkisiin hankintoihin liittyvissä kysymyksissä. Neuvonta on veloituksetonta. Neuvonnan saamiseksi ei tarvitse olla Suomen Yrittäjien jäsen. Suomen Yrittäjien hankintaneuvonta yrityksille",
+    "url": "https://www.yrittajat.fi/neuvontapalvelut/hankintaneuvonta/",
+    "source_page": "https://www.ouka.fi/hankinnat",
+    "found_at": "2026-04-16T09:43:14.110485Z",
     "is_new": true
   }
 ]
