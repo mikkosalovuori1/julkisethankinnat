@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tulevien hankintojen vuosikello</title>
+<style>
+body{margin:0;font-family:Arial;background:#0a0e1a;color:#e5e7eb}
+.wrap{max-width:1200px;margin:auto;padding:24px}
+.month{background:#111827;border:1px solid #1f2937;border-radius:14px;padding:14px;margin-bottom:14px}
+.item{background:#0f172a;border:1px solid #1f2937;border-radius:10px;padding:10px;margin:8px 0}
+.tag{display:inline-block;background:#7c3aed;padding:4px 8px;border-radius:999px;font-size:12px;margin-right:6px}
+.muted{color:#94a3b8;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📆 Tulevien hankintojen vuosikello</h1>
+  <div id="app">Ladataan...</div>
+</div>
+
+<script>
+function parseDate(d){
+  if(!d) return null;
+  if(String(d).includes(".")){
+    const [day,month,year]=String(d).split(".");
+    return new Date(year,month-1,day);
+  }
+  const p=new Date(d);
+  return isNaN(p.getTime())?null:p;
+}
+
+const monthNames = ["Tammikuu","Helmikuu","Maaliskuu","Huhtikuu","Toukokuu","Kesäkuu","Heinäkuu","Elokuu","Syyskuu","Lokakuu","Marraskuu","Joulukuu"];
+
+fetch('./data/procurements.json?v='+Date.now())
+.then(r=>r.json())
+.then(data=>{
+  const candidates = data.filter(i =>
+    ["hankintasuunnitelma","hankintakalenteritieto","investointipäätös","budjetti","käynnissä oleva hankinta"].includes(i.item_type)
+  );
+
+  const buckets = {};
+  monthNames.forEach((_, idx) => buckets[idx] = []);
+
+  candidates.forEach(i=>{
+    const d = parseDate(i.deadline_at || i.published_at || i.found_at);
+    const m = d ? d.getMonth() : 0;
+    buckets[m].push(i);
+  });
+
+  document.getElementById('app').innerHTML = monthNames.map((name, idx)=>`
+    <div class="month">
+      <h2 style="margin-top:0;">${name}</h2>
+      ${buckets[idx].length ? buckets[idx].map(i=>`
+        <div class="item">
+          <div style="font-weight:bold;">${i.title}</div>
+          <div class="muted">${i.entity} · ${i.item_type} · ${i.area || ""}</div>
+          <div style="margin-top:6px;">
+            ${(i.signal_tags || []).slice(0,3).map(t=>`<span class="tag">${t}</span>`).join("")}
+          </div>
+          <div style="margin-top:8px;"><a href="detail.html?id=${encodeURIComponent(i.id || i.url)}">Avaa tiedot</a></div>
+        </div>
+      `).join("") : `<div class="muted">Ei kohteita.</div>`}
+    </div>
+  `).join("");
+});
+</script>
+</body>
+</html>
