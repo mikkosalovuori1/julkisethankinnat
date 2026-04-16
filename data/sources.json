@@ -31,7 +31,6 @@
       "https://www.senaatti.fi/hankinnat/"
     ]
   },
-
   {
     "name": "Helsinki",
     "area": "Uusimaa",
@@ -80,7 +79,6 @@
       "https://www.ouka.fi/oulu/hankinnat"
     ]
   },
-
   {
     "name": "Jyväskylä",
     "area": "Keski-Suomi",
@@ -129,7 +127,6 @@
       "https://www.vaasa.fi/hankinnat"
     ]
   },
-
   {
     "name": "Akaa",
     "area": "Pirkanmaa",
@@ -160,6 +157,302 @@
     "source_name": "Joensuu",
     "urls": [
       "https://www.joensuu.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Jyvaskyla",
+    "area": "Suomi",
+    "source_name": "Jyvaskyla",
+    "urls": [
+      "https://www.jyvaskyla.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Seinajoki",
+    "area": "Suomi",
+    "source_name": "Seinajoki",
+    "urls": [
+      "https://www.seinajoki.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Mikkeli",
+    "area": "Suomi",
+    "source_name": "Mikkeli",
+    "urls": [
+      "https://www.mikkeli.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kotka",
+    "area": "Suomi",
+    "source_name": "Kotka",
+    "urls": [
+      "https://www.kotka.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kouvola",
+    "area": "Suomi",
+    "source_name": "Kouvola",
+    "urls": [
+      "https://www.kouvola.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Salo",
+    "area": "Suomi",
+    "source_name": "Salo",
+    "urls": [
+      "https://www.salo.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Hyvinkaa",
+    "area": "Suomi",
+    "source_name": "Hyvinkaa",
+    "urls": [
+      "https://www.hyvinkaa.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Jarvenpaa",
+    "area": "Suomi",
+    "source_name": "Jarvenpaa",
+    "urls": [
+      "https://www.jarvenpaa.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Nurmijarvi",
+    "area": "Suomi",
+    "source_name": "Nurmijarvi",
+    "urls": [
+      "https://www.nurmijarvi.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Tuusula",
+    "area": "Suomi",
+    "source_name": "Tuusula",
+    "urls": [
+      "https://www.tuusula.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kirkkonummi",
+    "area": "Suomi",
+    "source_name": "Kirkkonummi",
+    "urls": [
+      "https://www.kirkkonummi.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kaarina",
+    "area": "Suomi",
+    "source_name": "Kaarina",
+    "urls": [
+      "https://www.kaarina.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Raisio",
+    "area": "Suomi",
+    "source_name": "Raisio",
+    "urls": [
+      "https://www.raisio.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Lohja",
+    "area": "Suomi",
+    "source_name": "Lohja",
+    "urls": [
+      "https://www.lohja.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kajaani",
+    "area": "Suomi",
+    "source_name": "Kajaani",
+    "urls": [
+      "https://www.kajaani.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kemi",
+    "area": "Suomi",
+    "source_name": "Kemi",
+    "urls": [
+      "https://www.kemi.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Tornio",
+    "area": "Suomi",
+    "source_name": "Tornio",
+    "urls": [
+      "https://www.tornio.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Savonlinna",
+    "area": "Suomi",
+    "source_name": "Savonlinna",
+    "urls": [
+      "https://www.savonlinna.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Imatra",
+    "area": "Suomi",
+    "source_name": "Imatra",
+    "urls": [
+      "https://www.imatra.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Riihimaki",
+    "area": "Suomi",
+    "source_name": "Riihimaki",
+    "urls": [
+      "https://www.riihimaki.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Hameenlinna",
+    "area": "Suomi",
+    "source_name": "Hameenlinna",
+    "urls": [
+      "https://www.hameenlinna.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Porvoo",
+    "area": "Suomi",
+    "source_name": "Porvoo",
+    "urls": [
+      "https://www.porvoo.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Rauma",
+    "area": "Suomi",
+    "source_name": "Rauma",
+    "urls": [
+      "https://www.rauma.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Naantali",
+    "area": "Suomi",
+    "source_name": "Naantali",
+    "urls": [
+      "https://www.naantali.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kokkola",
+    "area": "Suomi",
+    "source_name": "Kokkola",
+    "urls": [
+      "https://www.kokkola.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Iisalmi",
+    "area": "Suomi",
+    "source_name": "Iisalmi",
+    "urls": [
+      "https://www.iisalmi.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Viitasaari",
+    "area": "Suomi",
+    "source_name": "Viitasaari",
+    "urls": [
+      "https://www.viitasaari.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kuusamo",
+    "area": "Suomi",
+    "source_name": "Kuusamo",
+    "urls": [
+      "https://www.kuusamo.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Ylivieska",
+    "area": "Suomi",
+    "source_name": "Ylivieska",
+    "urls": [
+      "https://www.ylivieska.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Ulvila",
+    "area": "Suomi",
+    "source_name": "Ulvila",
+    "urls": [
+      "https://www.ulvila.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Karkkila",
+    "area": "Suomi",
+    "source_name": "Karkkila",
+    "urls": [
+      "https://www.karkkila.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Kemijarvi",
+    "area": "Suomi",
+    "source_name": "Kemijarvi",
+    "urls": [
+      "https://www.kemijarvi.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Pieksamaki",
+    "area": "Suomi",
+    "source_name": "Pieksamaki",
+    "urls": [
+      "https://www.pieksamaki.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Nurmes",
+    "area": "Suomi",
+    "source_name": "Nurmes",
+    "urls": [
+      "https://www.nurmes.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Lieksa",
+    "area": "Suomi",
+    "source_name": "Lieksa",
+    "urls": [
+      "https://www.lieksa.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Suonenjoki",
+    "area": "Suomi",
+    "source_name": "Suonenjoki",
+    "urls": [
+      "https://www.suonenjoki.fi/hankinnat"
+    ]
+  },
+  {
+    "name": "Forssa",
+    "area": "Suomi",
+    "source_name": "Forssa",
+    "urls": [
+      "https://www.forssa.fi/hankinnat"
     ]
   }
 ]
