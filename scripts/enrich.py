@@ -205,6 +205,125 @@ def build_ai_summary(item_type, cpv_label, matched_keywords, signal_tags, pdf_te
 
     return " ".join(parts).strip()
 
+def extract_budget_line_items(item, cpv_rules, keyword_rules):
+    pdf_text = item.get("pdf_text", "") or ""
+    if not pdf_text or str(pdf_text).startswith("PDF_ERROR"):
+        return []
+
+    item_type = item.get("item_type", "")
+    if item_type not in ["budjetti", "investointipäätös", "hankintasuunnitelma"]:
+        return []
+
+    lines = [re.sub(r"\s+", " ", line).strip() for line in pdf_text.splitlines()]
+    lines = [line for line in lines if line]
+
+    generated = []
+    seen = set()
+
+    value_patterns = [
+        r"(\d[\d\s]{1,15},\d{2}\s?€)",
+        r"(\d[\d\s]{1,15}\s?€)",
+        r"(\d[\d\s]{1,15}\s?eur)",
+        r"(\d[\d\s]{1,15}\s?milj\.?\s?€)",
+        r"(\d[\d\s]{1,15}\s?m€)"
+    ]
+
+    for idx, line in enumerate(lines):
+        if len(line) < 10:
+            continue
+
+        value = ""
+        for pattern in value_patterns:
+            m = re.search(pattern, line, flags=re.IGNORECASE)
+            if m:
+                value = m.group(1).strip()
+                break
+
+        if not value:
+            continue
+
+        title = re.sub(r"(\d[\d\s]{1,15},\d{2}\s?€|\d[\d\s]{1,15}\s?€|\d[\d\s]{1,15}\s?eur|\d[\d\s]{1,15}\s?milj\.?\s?€|\d[\d\s]{1,15}\s?m€)", "", line, flags=re.IGNORECASE).strip(" -–—:;,.")
+        title = re.sub(r"\s+", " ", title).strip()
+
+        if len(title) < 4:
+            continue
+        if len(title) > 180:
+            continue
+
+        lower_title = title.lower()
+        if lower_title in seen:
+            continue
+        seen.add(lower_title)
+
+        context_lines = lines[max(0, idx-1):min(len(lines), idx+2)]
+        context_text = " ".join(context_lines)
+
+        cpv, cpv_label = find_cpv(context_text, cpv_rules)
+        matched_keywords, theme_tags, signal_tags = extract_keyword_tags(context_text, keyword_rules)
+        fb_themes, fb_signals = fallback_tags(context_text, item_type)
+
+        for t in fb_themes:
+            if t not in theme_tags:
+                theme_tags.append(t)
+        for s in fb_signals:
+            if s not in signal_tags:
+                signal_tags.append(s)
+
+        if "poimittu budjettidokumentista" not in signal_tags:
+            signal_tags.append("poimittu budjettidokumentista")
+        if "budjetoitu" not in signal_tags:
+            signal_tags.append("budjetoitu")
+
+        if not theme_tags:
+            theme_tags = ["Muut hankinnat"]
+
+        child_id = f"{item.get('id','budget')}-budget-item-{idx}"
+
+        generated.append({
+            "id": child_id,
+            "entity": item.get("entity", ""),
+            "unit_name": item.get("unit_name", ""),
+            "area": item.get("area", ""),
+            "source_name": item.get("source_name", ""),
+            "source_page": item.get("source_page", ""),
+            "title": title,
+            "url": item.get("url", ""),
+            "document_url": item.get("document_url", ""),
+            "type_hint": "budjettirivi",
+            "pdf_text": item.get("pdf_text", ""),
+            "found_at": item.get("found_at", ""),
+            "last_seen_at": item.get("last_seen_at", ""),
+            "is_new": item.get("is_new", False),
+            "published_at": item.get("published_at", item.get("found_at", "")),
+            "deadline_at": extract_deadline(context_text),
+            "contract_end_date": "",
+            "estimated_budget_value": value,
+            "cpv_primary": cpv,
+            "cpv_label": cpv_label,
+            "item_type": "budjetti",
+            "matched_keywords": matched_keywords,
+            "theme_tags": theme_tags,
+            "signal_tags": signal_tags,
+            "source_domain": item.get("source_domain", ""),
+            "ai_summary": f"Poimittu budjettidokumentista. {context_text[:350]}",
+            "search_text": " ".join([
+                title,
+                context_text,
+                value,
+                " ".join(matched_keywords),
+                " ".join(theme_tags),
+                " ".join(signal_tags),
+                cpv,
+                cpv_label,
+                "budjetti"
+            ]).lower(),
+            "generated_from_budget": True,
+            "parent_budget_id": item.get("id", ""),
+            "parent_budget_title": item.get("title", "")
+        })
+
+    return generated[:40]
+
 procurements = load_json(PROCUREMENTS_FILE, [])
 cpv_rules = load_json(CPV_RULES_FILE, [])
 keyword_rules = load_json(KEYWORD_RULES_FILE, [])
@@ -254,7 +373,7 @@ for item in procurements:
     parsed = urlparse(item.get("url", ""))
     source_domain = parsed.netloc
 
-    out.append({
+    base_item = {
         **item,
         "cpv_primary": cpv,
         "cpv_label": cpv_label,
@@ -267,6 +386,9 @@ for item in procurements:
         "signal_tags": signal_tags,
         "source_domain": source_domain,
         "ai_summary": ai_summary,
+        "generated_from_budget": item.get("generated_from_budget", False),
+        "parent_budget_id": item.get("parent_budget_id", ""),
+        "parent_budget_title": item.get("parent_budget_title", ""),
         "search_text": " ".join([
             text,
             " ".join(matched_keywords),
@@ -277,7 +399,21 @@ for item in procurements:
             item_type,
             budget_value
         ]).lower()
-    })
+    }
+
+    out.append(base_item)
+
+    for child in extract_budget_line_items(base_item, cpv_rules, keyword_rules):
+        out.append(child)
+
+# poistetaan duplikaatit id:n perusteella
+unique = {}
+for item in out:
+    key = item.get("id") or item.get("url")
+    if key not in unique:
+        unique[key] = item
+
+final_items = list(unique.values())
 
 with open(PROCUREMENTS_FILE, "w", encoding="utf-8") as f:
-    json.dump(out, f, ensure_ascii=False, indent=2)
+    json.dump(final_items, f, ensure_ascii=False, indent=2)
