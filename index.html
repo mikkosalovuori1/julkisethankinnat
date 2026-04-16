@@ -148,7 +148,6 @@ fetch('./data/procurements.json?v=' + Date.now())
 
   function search(){
     const filtered = data.filter(item => {
-
       const text = item.search_text || "";
 
       if(q.value && !fuzzy(q.value, text)) return false;
@@ -195,6 +194,7 @@ fetch('./data/procurements.json?v=' + Date.now())
         <div>
           ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
           ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+          ${item.contract_end_date ? `<span class="tag signal">Päättyy ${esc(item.contract_end_date)}</span>` : ''}
         </div>
 
         <div class="muted" style="margin-top:8px;">
