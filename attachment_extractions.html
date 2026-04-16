@@ -1,42 +1,238 @@
-import io
-import requests
-import pytesseract
-from pdf2image import convert_from_bytes
-from PIL import Image
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-MAX_PDF_PAGES = 8
-MAX_TEXT_CHARS = 20000
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
-def extract_text_from_image_bytes(image_bytes: bytes) -> str:
-    try:
-        image = Image.open(io.BytesIO(image_bytes))
-        text = pytesseract.image_to_string(image, lang="fin+eng")
-        return text[:MAX_TEXT_CHARS]
-    except Exception as e:
-        return f"OCR_IMAGE_ERROR: {str(e)}"
+<title>Liite- ja OCR-poiminnat</title>
 
-def extract_text_from_pdf_ocr(url: str) -> str:
-    try:
-        r = requests.get(
-            url,
-            timeout=60,
-            headers={"User-Agent": "Mozilla/5.0 HankintaSeurantaBot/1.0"}
-        )
-        r.raise_for_status()
+<style>
+body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
+.wrap { max-width:1400px; margin:0 auto; padding:24px; }
+.panel { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; margin-bottom:16px; }
+.filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+input, select, button {
+  padding:10px; border-radius:10px;
+  border:1px solid #1f2937;
+  background:#111827; color:white;
+}
+button { background:#2563eb; cursor:pointer; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
+.tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
+.theme { background:#0f766e; }
+.signal { background:#7c3aed; }
+.attachment { background:#92400e; }
+.ocr { background:#b45309; }
+.muted { color:#94a3b8; font-size:13px; }
+.section-title { font-size:12px; color:#94a3b8; margin-top:10px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+.topnav { display:flex; gap:10px; margin:12px 0 20px 0; flex-wrap:wrap; }
+.topnav a {
+  display:inline-block; padding:10px 14px; background:#2563eb; color:white;
+  text-decoration:none; border-radius:10px;
+}
+</style>
+</head>
 
-        images = convert_from_bytes(r.content, dpi=200, first_page=1, last_page=MAX_PDF_PAGES)
-        texts = []
+<body>
+<div class="wrap">
+  <h1>🔦 Liite- ja OCR-poiminnat</h1>
 
-        for img in images[:MAX_PDF_PAGES]:
-            try:
-                page_text = pytesseract.image_to_string(img, lang="fin+eng")
-                if page_text and page_text.strip():
-                    texts.append(page_text.strip())
-            except Exception:
-                continue
+  <div class="topnav">
+    <a href="index.html">← Pääsivu</a>
+    <a href="agent.html">🤖 Agentti</a>
+    <a href="history.html">🗂️ Historia</a>
+  </div>
 
-        full_text = "\n\n".join(texts).strip()
-        return full_text[:MAX_TEXT_CHARS]
+  <div class="panel filters">
+    <input id="q" placeholder="Sanahaku poiminnoista" />
+    <input id="entity" placeholder="Hankintayksikkö" />
+    <input id="area" placeholder="Alue" />
+    <input id="cpv" placeholder="CPV-koodi" />
 
-    except Exception as e:
-        return f"OCR_PDF_ERROR: {str(e)}"
+    <select id="themeFilter">
+      <option value="">Kaikki teemat</option>
+    </select>
+
+    <select id="signalFilter">
+      <option value="">Kaikki signaalit</option>
+    </select>
+
+    <select id="sourceMode">
+      <option value="">Kaikki poiminnat</option>
+      <option value="ocr">Vain OCR-lähteiset</option>
+      <option value="attachment">Kaikki liitepoiminnat</option>
+    </select>
+
+    <button id="searchBtn">HAE</button>
+  </div>
+
+  <div id="debug" class="muted" style="margin-bottom:8px;"></div>
+  <div id="count" class="muted" style="margin-bottom:12px;"></div>
+  <div id="results" class="grid"></div>
+</div>
+
+<script>
+function esc(v){
+  return String(v || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function fuzzy(q, t){
+  q = (q || "").toLowerCase();
+  t = (t || "").toLowerCase();
+  if(!q) return true;
+  if(t.includes(q)) return true;
+  let i = 0;
+  for(let c of t){
+    if(c === q[i]) i++;
+    if(i === q.length) return true;
+  }
+  return false;
+}
+
+function renderTags(items, cls){
+  return (items || []).map(t => `<span class="tag ${cls}">${esc(t)}</span>`).join("");
+}
+
+function snippet(text){
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  return esc(raw.slice(0, 220)) + (raw.length > 220 ? "..." : "");
+}
+
+fetch('./data/procurements.json?v=' + Date.now())
+.then(r => r.json())
+.then(data => {
+  const q = document.getElementById('q');
+  const entity = document.getElementById('entity');
+  const area = document.getElementById('area');
+  const cpv = document.getElementById('cpv');
+  const themeFilter = document.getElementById('themeFilter');
+  const signalFilter = document.getElementById('signalFilter');
+  const sourceMode = document.getElementById('sourceMode');
+  const searchBtn = document.getElementById('searchBtn');
+  const debug = document.getElementById('debug');
+  const count = document.getElementById('count');
+  const results = document.getElementById('results');
+
+  const extracted = data.filter(item =>
+    item.generated_from_attachment === true ||
+    String(item.pdf_text || "").includes("--- OCR ---") ||
+    String(item.pdf_text || "").startsWith("OCR_")
+  );
+
+  const allThemes = [...new Set(
+    extracted.flatMap(item => Array.isArray(item.theme_tags) ? item.theme_tags : []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  const allSignals = [...new Set(
+    extracted.flatMap(item => Array.isArray(item.signal_tags) ? item.signal_tags : []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  themeFilter.innerHTML =
+    `<option value="">Kaikki teemat</option>` +
+    allThemes.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+
+  signalFilter.innerHTML =
+    `<option value="">Kaikki signaalit</option>` +
+    allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+  debug.innerHTML = `Poimintoja: <b>${extracted.length}</b> · Teemoja: <b>${allThemes.length}</b> · Signaaleja: <b>${allSignals.length}</b>`;
+
+  function score(item){
+    let s = 0;
+    if(item.generated_from_attachment) s += 6;
+    if(String(item.pdf_text || "").includes("--- OCR ---")) s += 4;
+    if(String(item.pdf_text || "").startsWith("OCR_")) s += 4;
+    if(item.estimated_budget_value) s += 3;
+    if((item.signal_tags || []).length) s += (item.signal_tags || []).length * 2;
+    if((item.theme_tags || []).length) s += (item.theme_tags || []).length * 2;
+    if(item.cpv_primary) s += 2;
+    return s;
+  }
+
+  function search(){
+    const filtered = extracted.filter(item => {
+      const text = item.search_text || "";
+
+      if(q.value && !fuzzy(q.value, text)) return false;
+      if(entity.value && !String(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
+      if(area.value && !String(item.area || "").toLowerCase().includes(area.value.toLowerCase())) return false;
+      if(cpv.value && !String(item.cpv_primary || "").includes(cpv.value)) return false;
+      if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
+      if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
+
+      if(sourceMode.value === "ocr"){
+        const isOcr = String(item.pdf_text || "").includes("--- OCR ---") || String(item.pdf_text || "").startsWith("OCR_");
+        if(!isOcr) return false;
+      }
+
+      if(sourceMode.value === "attachment"){
+        if(item.generated_from_attachment !== true) return false;
+      }
+
+      return true;
+    }).sort((a, b) => score(b) - score(a));
+
+    count.innerHTML = `<b>${filtered.length}</b> tulosta`;
+
+    results.innerHTML = filtered.map(item => `
+      <div class="card">
+        <div>
+          <b>${esc(item.entity)}</b>
+          ${item.generated_from_attachment ? '<span class="tag attachment">LIITEPOIMINTA</span>' : ''}
+          ${(String(item.pdf_text || "").includes("--- OCR ---") || String(item.pdf_text || "").startsWith("OCR_")) ? '<span class="tag ocr">OCR</span>' : ''}
+        </div>
+
+        <div style="font-weight:bold; margin:8px 0;">${esc(item.title)}</div>
+
+        <div>
+          ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
+          ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+        </div>
+
+        ${item.estimated_budget_value ? `
+          <div class="muted" style="margin-top:8px;">Arvioitu arvo: <b>${esc(item.estimated_budget_value)}</b></div>
+        ` : ''}
+
+        ${item.parent_attachment_title ? `
+          <div class="muted" style="margin-top:6px;">Emoliite: ${esc(item.parent_attachment_title)}</div>
+        ` : ''}
+
+        <div class="muted" style="margin-top:8px;">
+          ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
+        </div>
+
+        ${(item.theme_tags || []).length ? `
+          <div class="section-title">Teemat</div>
+          <div>${renderTags(item.theme_tags, "theme")}</div>
+        ` : ''}
+
+        ${(item.signal_tags || []).length ? `
+          <div class="section-title">Signaalit</div>
+          <div>${renderTags(item.signal_tags, "signal")}</div>
+        ` : ''}
+
+        <div class="section-title">Yhteenveto</div>
+        <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
+
+        <div style="margin-top:12px;">
+          <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  searchBtn.onclick = search;
+  search();
+});
+</script>
+</body>
+</html>
