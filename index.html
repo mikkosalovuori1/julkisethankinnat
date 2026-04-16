@@ -530,5 +530,26 @@
     render();
     loadData();
   </script>
+<script>
+fetch('./data/procurements.json')
+  .then(res => res.json())
+  .then(data => {
+    console.log("DATA:", data);
+
+    // Yksinkertainen render testiin:
+    const root = document.getElementById("root") || document.body;
+
+    root.innerHTML = data.map(item => `
+      <div style="padding:10px; border-bottom:1px solid #333; color:white;">
+        <b>${item.entity}</b><br/>
+        ${item.title}<br/>
+        <a href="${item.url}" target="_blank">${item.url}</a>
+      </div>
+    `).join('');
+  })
+  .catch(err => {
+    console.error("Fetch failed:", err);
+  });
+</script>
 </body>
 </html>
