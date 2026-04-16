@@ -28,6 +28,7 @@ button { background:#2563eb; cursor:pointer; }
 .hot { background:#dc2626; }
 .theme { background:#0f766e; }
 .signal { background:#7c3aed; }
+.budget { background:#92400e; }
 .muted { color:#94a3b8; font-size:13px; }
 .section-title { font-size:12px; color:#94a3b8; margin-top:10px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
 .topnav { display:flex; gap:10px; margin:12px 0 20px 0; flex-wrap:wrap; }
@@ -175,6 +176,7 @@ fetch('./data/procurements.json?v=' + Date.now())
     if((item.signal_tags || []).length) s += (item.signal_tags || []).length * 3;
     if((item.item_type || "").toLowerCase().includes("sopimus")) s += 3;
     if(item.estimated_budget_value) s += 3;
+    if(item.generated_from_budget) s += 4;
     return s;
   }
 
@@ -220,6 +222,7 @@ fetch('./data/procurements.json?v=' + Date.now())
           <b>${esc(item.entity)}</b>
           ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
           ${score(item) > 10 ? '<span class="badge hot">TOP</span>' : ''}
+          ${item.generated_from_budget ? '<span class="badge budget">BUDJETTIPOIMINTA</span>' : ''}
         </div>
 
         <div style="font-weight:bold;margin:8px 0;">${esc(item.title)}</div>
@@ -233,6 +236,10 @@ fetch('./data/procurements.json?v=' + Date.now())
 
         ${item.estimated_budget_value ? `
           <div class="muted" style="margin-top:8px;">Arvioitu budjetoitu arvo: <b>${esc(item.estimated_budget_value)}</b></div>
+        ` : ''}
+
+        ${item.generated_from_budget && item.parent_budget_title ? `
+          <div class="muted" style="margin-top:6px;">Poimittu dokumentista: ${esc(item.parent_budget_title)}</div>
         ` : ''}
 
         <div class="muted" style="margin-top:8px;">
