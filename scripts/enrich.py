@@ -89,6 +89,33 @@ def extract_contract_end(text):
 
     return ""
 
+def extract_deadline(text):
+    if not text:
+        return ""
+
+    t = " ".join(str(text).split())
+    t_l = t.lower()
+
+    trigger_words = [
+        "määräaika", "tarjoukset tulee jättää", "tarjousten jättöaika",
+        "viimeistään", "jättöaika", "tarjous tulee jättää", "deadline"
+    ]
+
+    if not any(w in t_l for w in trigger_words):
+        return ""
+
+    patterns = [
+        r"(?:määräaika|tarjoukset tulee jättää|tarjousten jättöaika|viimeistään|jättöaika|deadline)[^0-9]{0,25}(\d{1,2}\.\d{1,2}\.\d{4})",
+        r"(?:määräaika|tarjoukset tulee jättää|tarjousten jättöaika|viimeistään|jättöaika|deadline)[^0-9]{0,25}(\d{4}-\d{2}-\d{2})",
+    ]
+
+    for pattern in patterns:
+        matches = re.findall(pattern, t_l, flags=re.IGNORECASE)
+        if matches:
+            return matches[0]
+
+    return ""
+
 def extract_keyword_tags(text, keyword_rules):
     text_l = text.lower()
 
@@ -170,7 +197,7 @@ def build_ai_summary(item_type, cpv_label, matched_keywords, signal_tags, pdf_te
 
     cleaned_pdf = " ".join((pdf_text or "").split())
     if cleaned_pdf and not cleaned_pdf.startswith("PDF_ERROR"):
-        parts.append(cleaned_pdf[:600])
+        parts.append(cleaned_pdf[:700])
 
     return " ".join(parts).strip()
 
@@ -191,10 +218,10 @@ for item in procurements:
 
     cpv, cpv_label = find_cpv(text, cpv_rules)
     contract_end = extract_contract_end(text)
+    deadline_at = extract_deadline(text)
     item_type = classify_type(text)
 
     matched_keywords, theme_tags, signal_tags = extract_keyword_tags(text, keyword_rules)
-
     fb_themes, fb_signals = fallback_tags(text, item_type)
 
     for t in fb_themes:
@@ -228,6 +255,7 @@ for item in procurements:
         "cpv_label": cpv_label,
         "item_type": item_type,
         "contract_end_date": contract_end,
+        "deadline_at": deadline_at,
         "matched_keywords": matched_keywords,
         "theme_tags": theme_tags,
         "signal_tags": signal_tags,
