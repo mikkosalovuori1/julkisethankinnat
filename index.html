@@ -49,9 +49,9 @@ button { background:#2563eb; cursor:pointer; }
   </div>
 
   <div class="filters panel">
-    <input id="q" placeholder="Sanahaku (esim. maisema, rakennus)" />
-    <input id="cpv" placeholder="CPV-koodi (esim. 714)" />
-    <input id="cpvSearch" placeholder="CPV sanahaku (esim. rakentaminen)" />
+    <input id="q" placeholder="Sanahaku" />
+    <input id="cpv" placeholder="CPV-koodi" />
+    <input id="cpvSearch" placeholder="CPV sanahaku" />
     <input id="area" placeholder="Alue" />
     <input id="entity" placeholder="Hankintayksikkö" />
 
@@ -64,6 +64,7 @@ button { background:#2563eb; cursor:pointer; }
       <option>käynnissä oleva hankinta</option>
       <option>mennyt kilpailutus</option>
       <option>sopimus päättymässä</option>
+      <option>muu hankintatieto</option>
     </select>
 
     <select id="themeFilter">
@@ -82,6 +83,7 @@ button { background:#2563eb; cursor:pointer; }
     <button id="searchBtn">HAE</button>
   </div>
 
+  <div id="debug" class="muted" style="margin-bottom:8px;"></div>
   <div id="count" class="muted" style="margin-bottom:12px;"></div>
   <div id="results" class="grid"></div>
 </div>
@@ -124,7 +126,6 @@ function esc(v){
 fetch('./data/procurements.json?v=' + Date.now())
 .then(r => r.json())
 .then(data => {
-
   const q = document.getElementById('q');
   const cpv = document.getElementById('cpv');
   const cpvSearch = document.getElementById('cpvSearch');
@@ -138,25 +139,28 @@ fetch('./data/procurements.json?v=' + Date.now())
   const newOnly = document.getElementById('newOnly');
   const results = document.getElementById('results');
   const count = document.getElementById('count');
+  const debug = document.getElementById('debug');
   const searchBtn = document.getElementById('searchBtn');
 
   const allThemes = [...new Set(
-    data.flatMap(item => item.theme_tags || []).filter(Boolean)
+    data.flatMap(item => Array.isArray(item.theme_tags) ? item.theme_tags : [])
+      .filter(Boolean)
   )].sort((a, b) => a.localeCompare(b, 'fi'));
 
   const allSignals = [...new Set(
-    data.flatMap(item => item.signal_tags || []).filter(Boolean)
+    data.flatMap(item => Array.isArray(item.signal_tags) ? item.signal_tags : [])
+      .filter(Boolean)
   )].sort((a, b) => a.localeCompare(b, 'fi'));
 
-  themeFilter.innerHTML = `
-    <option value="">Kaikki teemat</option>
-    ${allThemes.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')}
-  `;
+  themeFilter.innerHTML =
+    `<option value="">Kaikki teemat</option>` +
+    allThemes.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
 
-  signalFilter.innerHTML = `
-    <option value="">Kaikki signaalit</option>
-    ${allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}
-  `;
+  signalFilter.innerHTML =
+    `<option value="">Kaikki signaalit</option>` +
+    allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+  debug.innerHTML = `Teemoja: <b>${allThemes.length}</b> · Signaaleja: <b>${allSignals.length}</b>`;
 
   function score(item){
     let s = 0;
@@ -179,7 +183,6 @@ fetch('./data/procurements.json?v=' + Date.now())
       const text = item.search_text || "";
 
       if(q.value && !fuzzy(q.value, text)) return false;
-
       if(cpv.value && !(item.cpv_primary || "").includes(cpv.value)) return false;
 
       if(cpvSearch.value){
@@ -188,14 +191,11 @@ fetch('./data/procurements.json?v=' + Date.now())
       }
 
       if(area.value && !(item.area || "").toLowerCase().includes(area.value.toLowerCase())) return false;
-
       if(entity.value && !(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
-
       if(type.value && item.item_type !== type.value) return false;
 
-      if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
-
-      if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
+      if(themeFilter.value && !(Array.isArray(item.theme_tags) ? item.theme_tags : []).includes(themeFilter.value)) return false;
+      if(signalFilter.value && !(Array.isArray(item.signal_tags) ? item.signal_tags : []).includes(signalFilter.value)) return false;
 
       if(newOnly.checked && !item.is_new) return false;
 
@@ -208,8 +208,7 @@ fetch('./data/procurements.json?v=' + Date.now())
       if((fromD || toD) && !d) return false;
 
       return true;
-    })
-    .sort((a, b) => score(b) - score(a));
+    }).sort((a, b) => score(b) - score(a));
 
     count.innerHTML = `<b>${filtered.length}</b> tulosta`;
 
