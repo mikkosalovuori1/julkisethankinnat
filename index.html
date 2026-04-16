@@ -44,6 +44,9 @@ button { background:#2563eb; cursor:pointer; }
 
   <div class="topnav">
     <a href="contracts.html">⏳ Päättyvät sopimukset</a>
+    <a href="pipeline.html">📆 Tulevat hankinnat</a>
+    <a href="contracts_timeline.html">🧾 Sopimusten vuosikello</a>
+    <a href="calendar.html">🗓️ Hankintakalenteri</a>
     <a href="history.html">🗂️ Historia</a>
     <a href="agent.html">🤖 Agentti</a>
   </div>
@@ -171,6 +174,7 @@ fetch('./data/procurements.json?v=' + Date.now())
     if((item.theme_tags || []).length) s += (item.theme_tags || []).length * 2;
     if((item.signal_tags || []).length) s += (item.signal_tags || []).length * 3;
     if((item.item_type || "").toLowerCase().includes("sopimus")) s += 3;
+    if(item.estimated_budget_value) s += 3;
     return s;
   }
 
@@ -227,14 +231,13 @@ fetch('./data/procurements.json?v=' + Date.now())
           ${item.deadline_at ? `<span class="tag">Määräaika ${esc(item.deadline_at)}</span>` : ''}
         </div>
 
+        ${item.estimated_budget_value ? `
+          <div class="muted" style="margin-top:8px;">Arvioitu budjetoitu arvo: <b>${esc(item.estimated_budget_value)}</b></div>
+        ` : ''}
+
         <div class="muted" style="margin-top:8px;">
           ${esc(item.area)} · ${esc(item.published_at || item.found_at)}
         </div>
-
-        ${(item.matched_keywords || []).length ? `
-          <div class="section-title">Avainsanat</div>
-          <div>${renderTags(item.matched_keywords, "")}</div>
-        ` : ''}
 
         ${(item.theme_tags || []).length ? `
           <div class="section-title">Teemat</div>
@@ -246,15 +249,8 @@ fetch('./data/procurements.json?v=' + Date.now())
           <div>${renderTags(item.signal_tags, "signal")}</div>
         ` : ''}
 
-        ${item.ai_summary ? `
-          <div class="section-title">Yhteenveto</div>
-          <div class="muted" style="line-height:1.45;">${esc(item.ai_summary)}</div>
-        ` : ''}
-
         <div style="margin-top:12px;">
           <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
-          ${item.document_url ? ` | <a href="${esc(item.document_url)}" target="_blank">PDF</a>` : ''}
-          ${item.source_page ? ` | <a href="${esc(item.source_page)}" target="_blank">Lähdesivu</a>` : ''}
         </div>
       </div>
     `).join("");
