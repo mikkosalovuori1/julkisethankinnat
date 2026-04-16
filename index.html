@@ -233,7 +233,15 @@
             ` : ''}
 
             <div class="time">${safe(item.found_at)}</div>
-
+${item.matched_keywords && item.matched_keywords.length ? `
+  <div class="meta" style="margin-bottom:12px;">
+    ${item.matched_keywords.map(tag => `
+      <span style="display:inline-block; background:#1f2937; color:#cbd5e1; padding:4px 8px; border-radius:999px; margin:0 6px 6px 0; font-size:12px;">
+        ${safe(tag)}
+      </span>
+    `).join('')}
+  </div>
+` : ''}
             <a class="btn" href="${safe(item.url)}" target="_blank" rel="noopener noreferrer">
               Avaa linkki
             </a>
