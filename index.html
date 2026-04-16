@@ -1,582 +1,67 @@
-<!DOCTYPE html>
-<html lang="fi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HankintaSeuranta v2 API</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>◆</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0a0e1a;
-      --panel: #111827;
-      --panel-2: #0f172a;
-      --line: #1e2d4a;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --dim: #64748b;
-      --accent: #3b82f6;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --red: #ef4444;
-      --shadow: 0 12px 40px rgba(0,0,0,.28);
-      --radius: 16px;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; background: radial-gradient(circle at top, #10182d 0%, var(--bg) 45%); color: var(--text); font-family: 'DM Sans', system-ui, sans-serif; }
-    a { color: inherit; }
-    button, input, select { font: inherit; }
-    ::selection { background: rgba(59,130,246,.25); color: white; }
-    .app { min-height: 100vh; }
-    .topbar {
-      position: sticky; top: 0; z-index: 30;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 14px 22px; backdrop-filter: blur(14px);
-      background: rgba(10,14,26,.78); border-bottom: 1px solid rgba(30,45,74,.9);
-      flex-wrap: wrap;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .2px; }
-    .diamond { color: var(--accent); font-size: 20px; }
-    .tag { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(59,130,246,.25); background: rgba(59,130,246,.10); color: #bfdbfe; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tab, .btn {
-      border: 1px solid transparent; background: transparent; color: var(--muted);
-      padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 700;
-    }
-    .tab.active, .btn.primary { color: white; background: rgba(59,130,246,.10); border-color: rgba(59,130,246,.22); }
-    .btn.secondary { color: #bfdbfe; background: rgba(15,23,42,.92); border-color: rgba(59,130,246,.15); }
-    .shell { max-width: 1380px; margin: 0 auto; padding: 24px; }
-    .hero { display: grid; grid-template-columns: 1.4fr .6fr; gap: 18px; margin-bottom: 22px; }
-    .card {
-      background: linear-gradient(180deg, rgba(17,24,39,.96), rgba(15,23,42,.96));
-      border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
-    }
-    .card.pad { padding: 20px; }
-    .headline { font-size: 30px; line-height: 1.04; font-weight: 800; margin: 0 0 10px; }
-    .lede { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; }
-    .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin: 18px 0 24px; }
-    .stat { padding: 18px; }
-    .stat .label { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; font-weight: 700; }
-    .stat .value { font-size: 28px; font-weight: 800; margin-top: 10px; }
-    .filters { display: grid; grid-template-columns: 1.4fr repeat(4, .8fr) auto auto; gap: 10px; margin-bottom: 18px; }
-    .input, .select {
-      width: 100%; background: #0b1220; border: 1px solid var(--line); color: var(--text);
-      border-radius: 12px; padding: 12px 14px; outline: none;
-    }
-    .input::placeholder { color: var(--dim); }
-    .list { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; }
-    .rows { display: grid; gap: 12px; }
-    .row {
-      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;
-      padding: 18px; border-radius: 16px; border: 1px solid var(--line); background: rgba(10,14,26,.45);
-      cursor: pointer; transition: transform .14s ease, border-color .14s ease, background .14s ease;
-    }
-    .row:hover, .row.active { transform: translateY(-1px); border-color: rgba(59,130,246,.45); background: rgba(59,130,246,.06); }
-    .row-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
-    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-    .pill { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); color: var(--muted); background: rgba(15,23,42,.72); }
-    .pill.blue { color: #bfdbfe; background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.25); }
-    .pill.green { color: #bbf7d0; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.25); }
-    .pill.amber { color: #fde68a; background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.25); }
-    .pill.red { color: #fecaca; background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.25); }
-    .desc { color: var(--muted); font-size: 14px; line-height: 1.6; }
-    .valuebox { min-width: 120px; text-align: right; font-weight: 800; color: #bfdbfe; }
-    .sidebar { padding: 18px; }
-    .sidebar h3 { margin: 0 0 14px; font-size: 20px; }
-    .field { margin-bottom: 14px; }
-    .field .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: 6px; }
-    .field .v { font-size: 15px; line-height: 1.55; word-break: break-word; }
-    .links { display: grid; gap: 10px; margin-top: 14px; }
-    .linkcard { display: flex; align-items: center; gap: 12px; text-decoration: none; padding: 12px; border-radius: 14px; background: #0b1220; border: 1px solid var(--line); }
-    .linkcard:hover { border-color: rgba(59,130,246,.42); }
-    .source-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
-    .source { padding: 18px; }
-    .source h4 { margin: 0 0 8px; font-size: 16px; }
-    .source p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 14px; }
-    .empty { padding: 28px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px; }
-    .footer-note { margin-top: 22px; color: var(--dim); font-size: 13px; }
-    .statusbar { display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
-    .dot { width:10px; height:10px; border-radius:999px; background: var(--red); box-shadow: 0 0 18px rgba(239,68,68,.6); }
-    .dot.ok { background: var(--green); box-shadow: 0 0 18px rgba(16,185,129,.6); }
-    .dot.warn { background: var(--amber); box-shadow: 0 0 18px rgba(245,158,11,.6); }
-    .muted { color: var(--muted); }
-    .stack { display:grid; gap:12px; }
-    .api-config { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-    .api-config .input { min-width: 260px; flex:1; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700; background: rgba(16,185,129,.12); color:#bbf7d0; border:1px solid rgba(16,185,129,.22); }
-    .warn-badge { background: rgba(245,158,11,.12); color:#fde68a; border:1px solid rgba(245,158,11,.22); }
-    @media (max-width: 1120px) {
-      .hero, .list { grid-template-columns: 1fr; }
-      .grid4 { grid-template-columns: repeat(2,1fr); }
-      .filters { grid-template-columns: 1fr 1fr; }
-      .source-grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 760px) {
-      .shell { padding: 16px; }
-      .headline { font-size: 24px; }
-      .grid4, .filters, .source-grid { grid-template-columns: 1fr; }
-      .row { grid-template-columns: 1fr; }
-      .valuebox { text-align: left; }
-      .topbar { padding: 12px 14px; }
-    }
-  </style>
-</head>
-<body>
-  <div id="app" class="app"></div>
-  <script>
-    const apiDefault = localStorage.getItem('hs_api_base') || 'http://localhost:8000';
-    const fallbackSeed = [
-      {
-        id: 'fallback-1', title: 'Uuden päiväkodin rakentaminen', org: 'Akaan kaupunki', region: 'Akaa',
-        category: 'Rakentaminen', type: 'Kunta', value: 0, status: 'Avoin', deadline: '',
-        description: 'Fallback-data näkyy vain jos API ei vastaa. Käynnistä v3 FastAPI ja tämä lista vaihtuu oikeaan backend-virtaan.',
-        source: 'Fallback', published: '', supplier: '', sourceUrl: 'https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/',
-        attachments: [{ name: 'Akaan hankintasivu', url: 'https://akaa.fi/elinkeinot-ja-tyollisyys/hankinnat-ja-tarjouspyynnot/' }],
-        entity_id: 1, source_document_id: null, confidence_score: 0.2, first_seen_at: new Date().toISOString(), last_seen_at: new Date().toISOString(),
-        contact_name: '', contact_role: '', contact_email: '', contact_phone: ''
-      }
-    ];
-
-    const state = {
-      view: 'dashboard',
-      apiBase: apiDefault.replace(/\/$/, ''),
-      apiOnline: false,
-      usingFallback: false,
-      procurements: [],
-      filtered: [],
-      entities: [],
-      selectedId: null,
-      selectedDetail: null,
-      crawlRuns: [],
-      jobStatus: null,
-      loading: false,
-      jobLoading: false,
-      filters: { q: '', region: '', category: '', status: '', type: '' },
-    };
-
-    function escapeHtml(str) {
-      return String(str || '').replace(/[&<>'"]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[s]));
-    }
-
-    function fmtDate(value) {
-      if (!value) return 'Ei tiedossa';
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return value;
-      return d.toLocaleString('fi-FI');
-    }
-
-    function fmtMoney(v) {
-      if (!v) return 'Arvo avoin';
-      return new Intl.NumberFormat('fi-FI', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
-    }
-
-    function statusClass(status) {
-      const s = (status || '').toLowerCase();
-      if (s.includes('avoin') || s.includes('detected')) return 'green';
-      if (s.includes('arvio')) return 'amber';
-      if (s.includes('myön') || s.includes('awarded')) return 'blue';
-      return 'red';
-    }
-
-    function sourceCards() {
-      return `
-        <div class="source-grid">
-          <div class="card source">
-            <h4>Akaa-first ingest</h4>
-            <p>v3-API:ssa ensimmäinen oikea lähde on Akaan hankintasivu. UI osaa hakea hankinnat, detaljit ja crawl-ajojen tilan backendistä.</p>
-          </div>
-          <div class="card source">
-            <h4>Admin crawl</h4>
-            <p>Napista voidaan queueuttaa lähdeajo endpointtiin <span class="mono">/api/admin/crawl/source/1/enqueue</span> ja lukea työn tila job-status endpointista.</p>
-          </div>
-          <div class="card source">
-            <h4>Fallback moodi</h4>
-            <p>Jos API ei vastaa, UI ei kaadu lattialle kuin märkä pahvilaatikko, vaan näyttää varadatan jotta layout ja flow säilyvät testattavina.</p>
-          </div>
-        </div>`;
-    }
-
-    function applyFilters() {
-      const q = state.filters.q.trim().toLowerCase();
-      state.filtered = state.procurements.filter(p => {
-        const hay = [p.title, p.description, p.org, p.region, p.category].join(' ').toLowerCase();
-        return (!q || hay.includes(q)) &&
-          (!state.filters.region || p.region === state.filters.region) &&
-          (!state.filters.category || p.category === state.filters.category) &&
-          (!state.filters.status || p.status === state.filters.status) &&
-          (!state.filters.type || p.type === state.filters.type);
-      });
-      if (!state.filtered.find(p => String(p.id) === String(state.selectedId))) {
-        state.selectedId = state.filtered[0]?.id ?? null;
-      }
-    }
-
-    function hydrateProcurement(p) {
-      return {
-        id: p.id,
-        title: p.title,
-        org: p.org || entityNameFor(p.entity_id) || 'Julkinen toimija',
-        region: p.region || '',
-        category: p.category || 'Muu',
-        type: p.type || inferType(entityNameFor(p.entity_id) || ''),
-        value: p.estimated_value || 0,
-        status: p.status || 'detected',
-        deadline: p.deadline_at || '',
-        description: p.description || 'Kuvaus puuttuu vielä crawlerilta.',
-        source: p.source || 'API',
-        published: p.first_seen_at || '',
-        supplier: p.supplier || '',
-        sourceUrl: p.source_url || '',
-        attachments: p.attachments || [],
-        entity_id: p.entity_id,
-        source_document_id: p.source_document_id,
-        confidence_score: p.confidence_score,
-        first_seen_at: p.first_seen_at,
-        last_seen_at: p.last_seen_at,
-        contact_name: p.contact_name || '',
-        contact_role: p.contact_role || '',
-        contact_email: p.contact_email || '',
-        contact_phone: p.contact_phone || ''
-      };
-    }
-
-    function entityNameFor(entityId) {
-      const e = state.entities.find(x => x.id === entityId);
-      return e?.name || '';
-    }
-
-    function entityRegionFor(entityId) {
-      const e = state.entities.find(x => x.id === entityId);
-      return e?.region || '';
-    }
-
-    function inferType(name) {
-      if (!name) return 'Julkinen';
-      if (name.toLowerCase().includes('kaupunki')) return 'Kaupunki';
-      if (name.toLowerCase().includes('hyvinvointi')) return 'Hyvinvointialue';
-      return 'Kunta';
-    }
-
-    async function apiFetch(path, options = {}) {
-      const res = await fetch(state.apiBase + path, options);
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      return res.json();
-    }
-
-    async function loadData() {
-      state.loading = true;
-      render();
-      try {
-        const [entities, procurements, runs] = await Promise.all([
-          apiFetch('/api/entities'),
-          apiFetch('/api/procurements'),
-          apiFetch('/api/admin/crawl/runs').catch(() => []),
-        ]);
-        state.entities = entities;
-        state.crawlRuns = runs;
-        state.procurements = procurements.map(p => hydrateProcurement({ ...p, org: entityNameFor(p.entity_id), region: entityRegionFor(p.entity_id) }));
-        state.apiOnline = true;
-        state.usingFallback = false;
-      } catch (err) {
-        console.warn('API fetch failed, using fallback', err);
-        state.entities = [{ id: 1, name: 'Akaan kaupunki', region: 'Akaa', type: 'municipality' }];
-        state.crawlRuns = [];
-        state.procurements = fallbackSeed;
-        state.apiOnline = false;
-        state.usingFallback = true;
-      } finally {
-        applyFilters();
-        state.loading = false;
-        render();
-        if (state.selectedId) loadDetail(state.selectedId);
-      }
-    }
-
-    async function loadDetail(id) {
-      state.selectedId = id;
-      const fallback = state.procurements.find(p => String(p.id) === String(id));
-      state.selectedDetail = fallback || null;
-      render();
-      if (state.usingFallback) return;
-      try {
-        const detail = await apiFetch(`/api/procurements/${id}`);
-        let attachments = [];
-        if (detail.source_document_id) {
-          try {
-            const doc = await apiFetch(`/api/documents/${detail.source_document_id}`);
-            attachments.push({ name: doc.title || 'Lähdedokumentti', url: doc.url || '#', note: doc.mime_type || '', object_storage_key: doc.object_storage_key || '' });
-          } catch (e) {
-            console.warn('document load failed', e);
-          }
-        }
-        state.selectedDetail = hydrateProcurement({
-          ...detail,
-          org: entityNameFor(detail.entity_id),
-          region: entityRegionFor(detail.entity_id),
-          attachments,
-          source: 'API'
-        });
-      } catch (err) {
-        console.warn('detail fetch failed', err);
-      }
-      render();
-    }
-
-    async function enqueueCrawl() {
-      if (state.usingFallback) {
-        alert('API ei ole saavutettavissa. Käynnistä v3-backendi ensin.');
-        return;
-      }
-      state.jobLoading = true;
-      render();
-      try {
-        const data = await apiFetch('/api/admin/crawl/source/1/enqueue', { method: 'POST' });
-        state.jobStatus = { id: data.job_id, status: 'queued', result: null };
-        pollJob(data.job_id);
-      } catch (err) {
-        alert('Crawl-ajon queueutus epäonnistui: ' + err.message);
-      } finally {
-        state.jobLoading = false;
-        render();
-      }
-    }
-
-    async function pollJob(id) {
-      try {
-        const data = await apiFetch(`/api/admin/jobs/${id}`);
-        state.jobStatus = data;
-        render();
-        if (['queued', 'started', 'deferred', 'scheduled'].includes(data.status)) {
-          setTimeout(() => pollJob(id), 2000);
-        } else {
-          loadData();
-        }
-      } catch (err) {
-        console.warn('job polling failed', err);
-      }
-    }
-
-    function uniqueValues(key) {
-      return [...new Set(state.procurements.map(x => x[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'fi'));
-    }
-
-    function renderDashboard() {
-      const selected = state.selectedDetail || state.procurements.find(p => String(p.id) === String(state.selectedId));
-      const regions = uniqueValues('region');
-      const categories = uniqueValues('category');
-      const statuses = uniqueValues('status');
-      const types = uniqueValues('type');
-      const total = state.procurements.length;
-      const open = state.procurements.filter(p => (p.status || '').toLowerCase().includes('avoin') || (p.status || '').toLowerCase().includes('detected')).length;
-      const withDocs = state.procurements.filter(p => p.source_document_id).length;
-      const entities = [...new Set(state.procurements.map(p => p.org))].length;
-
-      return `
-        <section class="hero">
-          <div class="card pad">
-            <div class="tag">◆ Akaa-first ingest kytketty API-virtaan</div>
-            <h1 class="headline">HankintaSeuranta, nyt oikealla backend-letkulla</h1>
-            <p class="lede">Tämä versio näyttää saman dashboard-hengen kuin alkuperäinen yksittäinen HTML, mutta hakee hankinnat FastAPI-backendistä aina kun se on saatavilla. Jos API nukkuu, käyttöliittymä vaihtaa varatankkiin eikä räjähdä konfettina seinälle.</p>
-            <div class="api-config">
-              <input id="apiBaseInput" class="input mono" value="${escapeHtml(state.apiBase)}" placeholder="http://localhost:8000" />
-              <button class="btn secondary" onclick="saveApiBase()">Tallenna API</button>
-              <button class="btn secondary" onclick="loadData()">Päivitä</button>
-              <button class="btn primary" onclick="enqueueCrawl()" ${state.jobLoading ? 'disabled' : ''}>${state.jobLoading ? 'Queueuttaa…' : 'Käynnistä crawl'}</button>
-            </div>
-          </div>
-          <div class="card pad stack">
-            <div class="statusbar"><span class="dot ${state.apiOnline ? 'ok' : state.usingFallback ? 'warn' : ''}"></span><strong>${state.apiOnline ? 'API online' : state.usingFallback ? 'Fallback moodi' : 'Yhteyttä testataan'}</strong></div>
-            <div class="muted">Backend base URL: <span class="mono">${escapeHtml(state.apiBase)}</span></div>
-            <div>${state.usingFallback ? '<span class="badge warn-badge">Näytetään varadataa</span>' : '<span class="badge">Live API käytössä</span>'}</div>
-            ${state.jobStatus ? `<div class="muted">Viimeisin job: <span class="mono">${escapeHtml(state.jobStatus.id)}</span><br>Tila: <strong>${escapeHtml(state.jobStatus.status || 'unknown')}</strong></div>` : '<div class="muted">Ei käynnistettyä crawl-jobia tässä sessiossa.</div>'}
-          </div>
-        </section>
-
-        <section class="grid4">
-          <div class="card stat"><div class="label">Hankinnat</div><div class="value">${total}</div></div>
-          <div class="card stat"><div class="label">Avoinna / detected</div><div class="value">${open}</div></div>
-          <div class="card stat"><div class="label">Lähdedokumentilla</div><div class="value">${withDocs}</div></div>
-          <div class="card stat"><div class="label">Toimijoita</div><div class="value">${entities}</div></div>
-        </section>
-
-        <section class="filters">
-          <input class="input" placeholder="Hae otsikosta tai kuvauksesta" value="${escapeHtml(state.filters.q)}" oninput="updateFilter('q', this.value)" />
-          <select class="select" onchange="updateFilter('region', this.value)"><option value="">Kaikki alueet</option>${regions.map(v => `<option ${state.filters.region===v?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select>
-          <select class="select" onchange="updateFilter('category', this.value)"><option value="">Kaikki kategoriat</option>${categories.map(v => `<option ${state.filters.category===v?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select>
-          <select class="select" onchange="updateFilter('status', this.value)"><option value="">Kaikki statukset</option>${statuses.map(v => `<option ${state.filters.status===v?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select>
-          <select class="select" onchange="updateFilter('type', this.value)"><option value="">Kaikki tyypit</option>${types.map(v => `<option ${state.filters.type===v?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select>
-          <button class="btn secondary" onclick="resetFilters()">Tyhjennä</button>
-          <button class="btn secondary" onclick="loadData()">Reload</button>
-        </section>
-
-        <section class="list">
-          <div class="rows">
-            ${state.loading ? '<div class="empty">Ladataan hankintoja…</div>' : state.filtered.length ? state.filtered.map(p => `
-              <article class="row ${String(state.selectedId)===String(p.id)?'active':''}" onclick="loadDetail('${escapeHtml(p.id)}')">
-                <div>
-                  <h3 class="row-title">${escapeHtml(p.title)}</h3>
-                  <div class="meta">
-                    <span class="pill blue">${escapeHtml(p.org)}</span>
-                    <span class="pill">${escapeHtml(p.region || 'Alue puuttuu')}</span>
-                    <span class="pill">${escapeHtml(p.category)}</span>
-                    <span class="pill ${statusClass(p.status)}">${escapeHtml(p.status)}</span>
-                  </div>
-                  <div class="desc">${escapeHtml(p.description || '')}</div>
-                </div>
-                <div class="valuebox">${fmtMoney(p.value)}</div>
-              </article>`).join('') : '<div class="empty">Ei osumia näillä suodattimilla.</div>'}
-          </div>
-          <aside class="card sidebar">${renderDetail(selected)}</aside>
-        </section>
-        <div class="footer-note">UI on rakennettu alkuperäisen yksittäisen .html-proton dashboard-rakenteen hengessä, mutta tämä versio käyttää v3-APIa aina kun mahdollista.</div>
-      `;
-    }
-
-    function renderDetail(selected) {
-      if (!selected) return '<div class="empty">Valitse hankinta nähdäksesi detaljit.</div>';
-      return `
-        <h3>${escapeHtml(selected.title)}</h3>
-        <div class="field"><div class="k">Toimija</div><div class="v">${escapeHtml(selected.org || 'Tuntematon')}</div></div>
-        <div class="field"><div class="k">Status</div><div class="v">${escapeHtml(selected.status || 'Tuntematon')}</div></div>
-        <div class="field"><div class="k">Kategoria</div><div class="v">${escapeHtml(selected.category || 'Muu')}</div></div>
-        <div class="field"><div class="k">Ensihavainto</div><div class="v">${fmtDate(selected.first_seen_at)}</div></div>
-        <div class="field"><div class="k">Viimeksi nähty</div><div class="v">${fmtDate(selected.last_seen_at)}</div></div>
-        <div class="field"><div class="k">Luottamus</div><div class="v">${selected.confidence_score != null ? `${Math.round(selected.confidence_score * 100)} %` : 'Ei laskettu'}</div></div>
-        <div class="field"><div class="k">Kuvaus</div><div class="v">${escapeHtml(selected.description || 'Kuvaus puuttuu')}</div></div>
-        <div class="field"><div class="k">Yhteyshenkilö</div><div class="v">${escapeHtml([selected.contact_name, selected.contact_role].filter(Boolean).join(' · ') || 'Ei vielä crawlerilta')}</div></div>
-        <div class="field"><div class="k">Yhteystiedot</div><div class="v">${escapeHtml([selected.contact_email, selected.contact_phone].filter(Boolean).join(' · ') || 'Ei tiedossa')}</div></div>
-        <div class="field"><div class="k">Lähde-URL</div><div class="v">${selected.sourceUrl ? `<a href="${escapeHtml(selected.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(selected.sourceUrl)}</a>` : 'Ei tiedossa'}</div></div>
-        <div class="links">
-          ${(selected.attachments && selected.attachments.length) ? selected.attachments.map(a => `
-            <a class="linkcard" href="${escapeHtml(a.url)}" target="_blank" rel="noreferrer">
-              <span>↗</span>
-              <div><strong>${escapeHtml(a.name)}</strong><div class="muted">${escapeHtml(a.note || '')}</div></div>
-            </a>`).join('') : '<div class="empty">Ei liitettyä lähdedokumenttia tässä näkymässä.</div>'}
-        </div>`;
-    }
-
-    function renderSources() {
-      return `
-        <div class="card pad" style="margin-bottom:18px;">
-          <h2 style="margin-top:0;">Lähteet ja ingest-polku</h2>
-          <p class="lede">Tässä näkymässä näet, mihin suuntaan sovellus on kytketty. v3:ssa Akaa toimii ensimmäisenä oikeana lähteenä ja UI voi käynnistää crawl-jobin admin-endpointin kautta.</p>
-        </div>
-        ${sourceCards()}
-      `;
-    }
-
-    function renderAdmin() {
-      return `
-        <div class="card pad" style="margin-bottom:18px;">
-          <h2 style="margin-top:0;">Admin</h2>
-          <p class="lede">Tämä on kevyt käyttöliittymä crawl-jobin queueutukseen ja ajotilojen seurantaan. Varsinainen tarkoitus on testata koko putki yhdestä näkymästä.</p>
-          <div class="api-config">
-            <button class="btn primary" onclick="enqueueCrawl()">Käynnistä Akaa crawl</button>
-            <button class="btn secondary" onclick="loadData()">Päivitä ajot</button>
-          </div>
-        </div>
-        <div class="card pad">
-          <h3 style="margin-top:0;">Crawl runs</h3>
-          ${state.crawlRuns.length ? `<div class="rows">${state.crawlRuns.map(run => `
-            <div class="row" style="cursor:default; grid-template-columns: 1fr auto;">
-              <div>
-                <div class="meta">
-                  <span class="pill">Source ${run.source_id}</span>
-                  <span class="pill ${statusClass(run.status)}">${escapeHtml(run.status)}</span>
-                </div>
-                <div class="desc">Käynnistetty ${fmtDate(run.started_at)} · tiedostoja ${run.files_downloaded} · sivuja ${run.pages_fetched}</div>
-              </div>
-              <div class="valuebox">${run.id}</div>
-            </div>`).join('')}</div>` : '<div class="empty">Ei ajohistoriaa tai endpoint ei ole vielä palauttanut rivejä.</div>'}
-          ${state.jobStatus ? `<div class="footer-note">Viimeisin job-status: <strong>${escapeHtml(state.jobStatus.status || '')}</strong>${state.jobStatus.result ? ` · tulos: ${escapeHtml(JSON.stringify(state.jobStatus.result))}` : ''}</div>` : ''}
-        </div>
-      `;
-    }
-
-    function render() {
-      document.getElementById('app').innerHTML = `
-        <div class="topbar">
-          <div class="brand"><span class="diamond">◆</span><span>HankintaSeuranta</span><span class="tag">v2 API UI</span></div>
-          <div class="tabs">
-            <button class="tab ${state.view==='dashboard'?'active':''}" onclick="setView('dashboard')">Dashboard</button>
-            <button class="tab ${state.view==='sources'?'active':''}" onclick="setView('sources')">Lähteet</button>
-            <button class="tab ${state.view==='admin'?'active':''}" onclick="setView('admin')">Admin</button>
-          </div>
-        </div>
-        <main class="shell">
-          ${state.view==='dashboard' ? renderDashboard() : state.view==='sources' ? renderSources() : renderAdmin()}
-        </main>`;
-    }
-
-    function setView(v) { state.view = v; render(); }
-    function updateFilter(key, value) { state.filters[key] = value; applyFilters(); render(); }
-    function resetFilters() { state.filters = { q: '', region: '', category: '', status: '', type: '' }; applyFilters(); render(); }
-    function saveApiBase() {
-      const input = document.getElementById('apiBaseInput');
-      state.apiBase = (input?.value || '').trim().replace(/\/$/, '');
-      localStorage.setItem('hs_api_base', state.apiBase);
-      loadData();
-    }
-
-    window.setView = setView;
-    window.updateFilter = updateFilter;
-    window.resetFilters = resetFilters;
-    window.loadDetail = loadDetail;
-    window.loadData = loadData;
-    window.enqueueCrawl = enqueueCrawl;
-    window.saveApiBase = saveApiBase;
-
-    render();
-    loadData();
-  </script>
-<script>
-fetch('./data/procurements.json')
-  .then(res => res.json())
-  .then(data => {
-    console.log("DATA:", data);
-
-    // Yksinkertainen render testiin:
-    const root = document.getElementById("root") || document.body;
-
-    root.innerHTML = data.map(item => `
-      <div style="padding:10px; border-bottom:1px solid #333; color:white;">
-        <b>${item.entity}</b><br/>
-        ${item.title}<br/>
-        <a href="${item.url}" target="_blank">${item.url}</a>
-      </div>
-    `).join('');
-  })
-  .catch(err => {
-    console.error("Fetch failed:", err);
-  });
-</script>
 <script>
 fetch('./data/procurements.json?v=' + Date.now())
   .then(res => res.json())
   .then(data => {
     const root = document.getElementById('root') || document.body;
 
+    const safe = (v) => String(v || '');
+
     root.innerHTML = `
-      <div style="padding:12px; color:white; background:#0a0e1a; border-bottom:1px solid #333;">
-        Löytyi ${data.length} hankintaa
-      </div>
-    ` + data.map(item => `
-      <div style="padding:12px; border-bottom:1px solid #333; color:white; background:#0a0e1a;">
-        <div><strong>${item.entity || ''}</strong></div>
-        <div>${item.title || ''}</div>
-        <div>
-          <a href="${item.url || '#'}" target="_blank" style="color:#60a5fa;">
-            ${item.url || ''}
-          </a>
+      <div style="min-height:100vh; background:#0a0e1a; color:#e5e7eb; font-family:Arial,sans-serif;">
+        <div style="max-width:1200px; margin:0 auto; padding:32px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:24px; flex-wrap:wrap;">
+            <div>
+              <h1 style="margin:0; font-size:32px;">HankintaSeuranta</h1>
+              <div style="color:#94a3b8; margin-top:6px;">Julkisten hankintojen päivittäinen seuranta</div>
+            </div>
+            <div style="background:#111827; border:1px solid #1f2937; padding:14px 18px; border-radius:14px;">
+              <div style="font-size:13px; color:#94a3b8;">Löytyi</div>
+              <div style="font-size:28px; font-weight:700;">${data.length}</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;">
+            ${data.map(item => `
+              <div style="background:#111827; border:1px solid #1f2937; border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px;">
+                  <div style="font-size:14px; color:#93c5fd; font-weight:600;">
+                    ${safe(item.entity)}
+                  </div>
+                  ${item.is_new ? `<span style="background:#1d4ed8; color:white; font-size:12px; padding:4px 8px; border-radius:999px;">UUSI</span>` : ''}
+                </div>
+
+                <div style="font-size:18px; font-weight:700; line-height:1.35; margin-bottom:10px;">
+                  ${safe(item.title)}
+                </div>
+
+                ${item.source_page ? `
+                  <div style="font-size:13px; color:#94a3b8; margin-bottom:10px;">
+                    Lähdesivu: ${safe(item.source_page)}
+                  </div>
+                ` : ''}
+
+                <div style="font-size:12px; color:#64748b; margin-bottom:14px;">
+                  ${safe(item.found_at)}
+                </div>
+
+                <a href="${safe(item.url)}" target="_blank" rel="noopener noreferrer"
+                  style="display:inline-block; background:#2563eb; color:white; text-decoration:none; padding:10px 14px; border-radius:10px; font-weight:600;">
+                  Avaa linkki
+                </a>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
-    `).join('');
+    `;
   })
   .catch(err => {
     console.error(err);
-    alert('Datan lataus epäonnistui');
+    const root = document.getElementById('root') || document.body;
+    root.innerHTML = `
+      <div style="padding:40px; background:#0a0e1a; color:white; font-family:Arial,sans-serif;">
+        Datan lataus epäonnistui.
+      </div>
+    `;
   });
 </script>
-</body>
-</html>
