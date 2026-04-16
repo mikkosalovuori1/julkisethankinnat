@@ -51,8 +51,8 @@ def find_cpv(text, rules):
 
     if matches:
         primary = matches[0]
-        secondary = [m["cpv"] for m in matches[1:3]]
-        confidence = min(0.55 + primary["score"] * 0.12, 0.95)
+        secondary = [m["cpv"] for m in matches[1:4]]
+        confidence = min(0.55 + primary["score"] * 0.12, 0.97)
         return primary["cpv"], primary["label"], secondary, round(confidence, 2)
 
     return "", "", [], 0.0
@@ -66,7 +66,7 @@ def extract_keywords(text, rules):
             if kw.lower() in text_l and kw not in hits:
                 hits.append(kw)
 
-    return hits[:12]
+    return hits[:20]
 
 procurements = load_json(PROCUREMENTS_FILE, [])
 rules = load_json(CPV_RULES_FILE, [])
@@ -78,8 +78,9 @@ for item in procurements:
     source_page = item.get("source_page", "")
     url = item.get("url", "")
     type_hint = item.get("type_hint", "")
+    pdf_text = item.get("pdf_text", "")
 
-    combined_text = f"{title} {source_page} {url} {type_hint}"
+    combined_text = f"{title} {source_page} {url} {type_hint} {pdf_text}"
 
     cpv_primary, cpv_label, cpv_secondary, cpv_confidence = find_cpv(combined_text, rules)
     matched_keywords = extract_keywords(combined_text, rules)
@@ -87,6 +88,11 @@ for item in procurements:
 
     parsed = urlparse(url)
     source_domain = parsed.netloc
+
+    ai_summary = ""
+    if pdf_text and not str(pdf_text).startswith("PDF_EXTRACT_ERROR"):
+        cleaned = " ".join(str(pdf_text).split())
+        ai_summary = cleaned[:700]
 
     enriched.append({
         **item,
@@ -100,6 +106,7 @@ for item in procurements:
         "deadline_at": item.get("deadline_at", ""),
         "document_file_name": url.split("/")[-1] if url else "",
         "source_domain": source_domain,
+        "ai_summary": ai_summary,
         "search_text": " ".join([
             item.get("title", ""),
             item.get("entity", ""),
@@ -109,7 +116,8 @@ for item in procurements:
             item_type,
             cpv_primary,
             cpv_label,
-            " ".join(matched_keywords)
+            " ".join(matched_keywords),
+            str(pdf_text)
         ]).lower()
     })
 
