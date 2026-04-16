@@ -92,7 +92,7 @@ for item in results:
 results = list(unique.values())
 
 with open(PROCUREMENTS_FILE, "w", encoding="utf-8") as f:
-    json.dump(results, f, ensure_ascii=False, indent=2)results = []
+    json.dump(results, f, ensure_ascii=False, indent=2)
 
 for source in sources:
     for url in source["urls"]:
