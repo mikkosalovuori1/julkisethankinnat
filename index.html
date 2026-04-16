@@ -66,6 +66,14 @@ button { background:#2563eb; cursor:pointer; }
       <option>sopimus päättymässä</option>
     </select>
 
+    <select id="themeFilter">
+      <option value="">Kaikki teemat</option>
+    </select>
+
+    <select id="signalFilter">
+      <option value="">Kaikki signaalit</option>
+    </select>
+
     <input id="fromDate" type="date"/>
     <input id="toDate" type="date"/>
 
@@ -123,12 +131,32 @@ fetch('./data/procurements.json?v=' + Date.now())
   const area = document.getElementById('area');
   const entity = document.getElementById('entity');
   const type = document.getElementById('type');
+  const themeFilter = document.getElementById('themeFilter');
+  const signalFilter = document.getElementById('signalFilter');
   const fromDate = document.getElementById('fromDate');
   const toDate = document.getElementById('toDate');
   const newOnly = document.getElementById('newOnly');
   const results = document.getElementById('results');
   const count = document.getElementById('count');
   const searchBtn = document.getElementById('searchBtn');
+
+  const allThemes = [...new Set(
+    data.flatMap(item => item.theme_tags || []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  const allSignals = [...new Set(
+    data.flatMap(item => item.signal_tags || []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  themeFilter.innerHTML = `
+    <option value="">Kaikki teemat</option>
+    ${allThemes.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')}
+  `;
+
+  signalFilter.innerHTML = `
+    <option value="">Kaikki signaalit</option>
+    ${allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}
+  `;
 
   function score(item){
     let s = 0;
@@ -164,6 +192,10 @@ fetch('./data/procurements.json?v=' + Date.now())
       if(entity.value && !(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
 
       if(type.value && item.item_type !== type.value) return false;
+
+      if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
+
+      if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
 
       if(newOnly.checked && !item.is_new) return false;
 
