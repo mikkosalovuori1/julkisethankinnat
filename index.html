@@ -13,7 +13,7 @@
       color: #e5e7eb;
     }
     .wrap {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 32px 20px;
     }
@@ -36,6 +36,7 @@
       border: 1px solid #1f2937;
       padding: 14px 18px;
       border-radius: 14px;
+      min-width: 120px;
     }
     .stat-label {
       font-size: 13px;
@@ -54,6 +55,38 @@
       border-radius: 12px;
       font-weight: 700;
       cursor: pointer;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a, #111827);
+      border: 1px solid #1f2937;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .hero-label {
+      display: inline-block;
+      font-size: 12px;
+      background: #1d4ed8;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    .hero h2 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      line-height: 1.3;
+    }
+    .hero-meta {
+      color: #93c5fd;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .hero-text {
+      color: #94a3b8;
+      margin-bottom: 14px;
+      word-break: break-word;
     }
     .filters {
       display: grid;
@@ -104,6 +137,12 @@
       color: #93c5fd;
       font-weight: 600;
     }
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
     .badge {
       background: #1d4ed8;
       color: white;
@@ -111,6 +150,9 @@
       padding: 4px 8px;
       border-radius: 999px;
       white-space: nowrap;
+    }
+    .badge-hot {
+      background: #dc2626;
     }
     .title {
       font-size: 18px;
@@ -182,9 +224,32 @@
         .replaceAll('"', '&quot;');
     }
 
+    function scoreItem(item) {
+      let score = 0;
+      if (item.is_new) score += 4;
+      if ((item.matched_keywords || []).length) score += item.matched_keywords.length * 3;
+
+      const text = `${item.title || ''} ${item.source_page || ''}`.toLowerCase();
+
+      const boosters = [
+        "it", "digital", "kamera", "kulunvalvonta", "rakenn",
+        "konsult", "siivous", "turva", "verkko", "pilvi",
+        "päiväkoti", "koulu", "sairaala"
+      ];
+
+      boosters.forEach(word => {
+        if (text.includes(word)) score += 2;
+      });
+
+      if ((item.url || '').toLowerCase().endsWith('.pdf')) score += 1;
+
+      return score;
+    }
+
     function renderDashboard(data) {
       const app = document.getElementById('app');
       const entities = [...new Set(data.map(x => x.entity).filter(Boolean))].sort();
+      const topLead = [...data].sort((a, b) => scoreItem(b) - scoreItem(a))[0];
 
       app.innerHTML = `
         <div class="top">
@@ -202,6 +267,25 @@
             <button id="exportBtn" class="export-btn">Lataa CSV</button>
           </div>
         </div>
+
+        ${topLead ? `
+          <div class="hero">
+            <div class="hero-label">Top opportunity</div>
+            <h2>${safe(topLead.title)}</h2>
+            <div class="hero-meta">${safe(topLead.entity)}</div>
+            <div class="hero-text">${safe(topLead.source_page || topLead.url)}</div>
+            ${(topLead.matched_keywords || []).length ? `
+              <div class="tags">
+                ${(topLead.matched_keywords || []).map(tag => `
+                  <span class="tag">${safe(tag)}</span>
+                `).join('')}
+              </div>
+            ` : ''}
+            <a class="btn" href="${safe(topLead.url)}" target="_blank" rel="noopener noreferrer">
+              Avaa top-liidi
+            </a>
+          </div>
+        ` : ''}
 
         <div class="filters">
           <input id="searchInput" class="input" type="text" placeholder="Hae hankinnoista tai kunnista..." />
@@ -230,18 +314,21 @@
         const entity = entityFilter.value;
         const onlyNew = newOnly.checked;
 
-        const filtered = data.filter(item => {
-          const matchesText =
-            !q ||
-            (item.title || '').toLowerCase().includes(q) ||
-            (item.entity || '').toLowerCase().includes(q) ||
-            (item.source_page || '').toLowerCase().includes(q);
+        const filtered = data
+          .filter(item => {
+            const matchesText =
+              !q ||
+              (item.title || '').toLowerCase().includes(q) ||
+              (item.entity || '').toLowerCase().includes(q) ||
+              (item.source_page || '').toLowerCase().includes(q) ||
+              (item.url || '').toLowerCase().includes(q);
 
-          const matchesEntity = !entity || item.entity === entity;
-          const matchesNew = !onlyNew || !!item.is_new;
+            const matchesEntity = !entity || item.entity === entity;
+            const matchesNew = !onlyNew || !!item.is_new;
 
-          return matchesText && matchesEntity && matchesNew;
-        });
+            return matchesText && matchesEntity && matchesNew;
+          })
+          .sort((a, b) => scoreItem(b) - scoreItem(a));
 
         countValue.textContent = filtered.length;
 
@@ -252,7 +339,10 @@
             <div class="card">
               <div class="card-top">
                 <div class="entity">${safe(item.entity)}</div>
-                ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
+                <div class="badges">
+                  ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
+                  ${scoreItem(item) >= 8 ? '<span class="badge badge-hot">KUUMA</span>' : ''}
+                </div>
               </div>
 
               <div class="title">${safe(item.title)}</div>
@@ -261,7 +351,7 @@
                 <div class="meta">Lähdesivu: ${safe(item.source_page)}</div>
               ` : ''}
 
-              <div class="time">${safe(item.found_at)}</div>
+              <div class="time">Ensihavainto: ${safe(item.found_at)}</div>
 
               ${item.matched_keywords && item.matched_keywords.length ? `
                 <div class="tags">
@@ -280,7 +370,7 @@
 
         exportBtn.onclick = () => {
           const rows = [
-            ["entity", "title", "url", "source_page", "found_at", "last_seen_at", "is_new", "matched_keywords"],
+            ["entity", "title", "url", "source_page", "found_at", "last_seen_at", "is_new", "matched_keywords", "score"],
             ...filtered.map(item => [
               item.entity || "",
               item.title || "",
@@ -289,7 +379,8 @@
               item.found_at || "",
               item.last_seen_at || "",
               item.is_new ? "true" : "false",
-              (item.matched_keywords || []).join("|")
+              (item.matched_keywords || []).join("|"),
+              String(scoreItem(item))
             ])
           ];
 
