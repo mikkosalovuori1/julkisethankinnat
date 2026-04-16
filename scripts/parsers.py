@@ -15,6 +15,7 @@ def is_relevant(text, href):
         "kalenteri", "urakka"
     ])
 
+# ---------- GENERIC FALLBACK ----------
 def parse_generic(url, html):
     soup = BeautifulSoup(html, "html.parser")
     results = []
@@ -34,6 +35,7 @@ def parse_generic(url, html):
 
     return results
 
+# ---------- AKAA ----------
 def parse_akaa(url, html):
     soup = BeautifulSoup(html, "html.parser")
     results = []
@@ -56,6 +58,7 @@ def parse_akaa(url, html):
 
     return results
 
+# ---------- HELSINKI ----------
 def parse_helsinki(url, html):
     soup = BeautifulSoup(html, "html.parser")
     results = []
@@ -75,6 +78,7 @@ def parse_helsinki(url, html):
 
     return results
 
+# ---------- ESPOO ----------
 def parse_espoo(url, html):
     soup = BeautifulSoup(html, "html.parser")
     results = []
@@ -97,9 +101,11 @@ def parse_espoo(url, html):
 
     return results
 
+# ---------- VANTAA ----------
 def parse_vantaa(url, html):
     return parse_generic(url, html)
 
+# ---------- TAMPERE ----------
 def parse_tampere(url, html):
     soup = BeautifulSoup(html, "html.parser")
     results = []
@@ -119,6 +125,32 @@ def parse_tampere(url, html):
 
     return results
 
+# ---------- DYNASTY / TWEB / ONCLOUDOS ----------
+def parse_dynamicsystems(url, html):
+    soup = BeautifulSoup(html, "html.parser")
+    results = []
+
+    for a in soup.find_all("a", href=True):
+        text = a.get_text(" ", strip=True)
+        href = a["href"]
+        full_url = normalize_link(url, href)
+
+        blob = f"{text} {href}".lower()
+
+        if any(x in blob for x in [
+            "esityslista", "pöytäkirja", "liite", "hankinta", "tarjous",
+            "päätös", "asia", "liitetiedosto", ".pdf"
+        ]):
+            results.append({
+                "title": text or href,
+                "url": full_url,
+                "document_url": full_url if ".pdf" in full_url.lower() else "",
+                "type_hint": "päätös/hankinta"
+            })
+
+    return results
+
+# ---------- ROUTER ----------
 def route_parser(url):
     url_l = url.lower()
 
@@ -132,5 +164,9 @@ def route_parser(url):
         return parse_vantaa
     if "tampere.fi" in url_l:
         return parse_tampere
+
+    # Dynasty / TWeb / OnCloudOS / asiahallinta-osoitteet
+    if any(x in url_l for x in ["dynasty", "drequest", "tweb", "oncloudos", "asia"]):
+        return parse_dynamicsystems
 
     return parse_generic
