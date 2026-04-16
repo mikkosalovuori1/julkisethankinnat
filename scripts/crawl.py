@@ -1,8 +1,12 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent))
+
 import json
 import requests
 from datetime import datetime
-from pathlib import Path
-from scripts.parsers import route_parser
+from parsers import route_parser
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
