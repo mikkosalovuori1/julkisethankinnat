@@ -1,600 +1,176 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HankintaSeuranta v4-lite</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #0a0e1a; color: #e5e7eb; }
-    .wrap { max-width: 1320px; margin: 0 auto; padding: 32px 20px; }
-    .top, .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-    .card, .hero, .stat, .panel {
-      background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 16px;
-    }
-    .hero { margin-bottom: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
-    .input, .select, .btn {
-      background: #111827; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 12px; padding: 12px 14px;
-    }
-    .btn { cursor: pointer; text-decoration: none; display: inline-block; }
-    .primary { background: #2563eb; color: white; border: none; }
-    .green { background: #16a34a; color: white; border: none; }
-    .tag { display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px; margin:0 6px 6px 0; background:#1f2937; color:#cbd5e1; }
-    .badge { display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px; margin-left:6px; background:#1d4ed8; color:white; }
-    .badge-hot { background:#dc2626; }
-    .muted { color: #94a3b8; font-size: 13px; }
-    .title { font-size: 18px; font-weight: 700; margin: 10px 0; line-height: 1.35; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HankintaSeuranta v7</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
+.wrap { max-width:1400px; margin:0 auto; padding:24px; }
+.panel { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
+.filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+input, select { padding:10px; border-radius:10px; border:1px solid #1f2937; background:#111827; color:white; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:14px; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; }
+.tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block;}
+.badge { background:#2563eb; padding:4px 8px; border-radius:999px; font-size:12px; margin-left:6px;}
+.hot { background:#dc2626; }
+</style>
 </head>
+
 <body>
-  <div id="app" class="wrap">Ladataan...</div>
+<div class="wrap">
+  <h1>HankintaSeuranta v7 🔍</h1>
 
-  <script>
-    function safe(v) {
-      return String(v || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;');
-    }
+  <div class="filters panel">
 
-    function fuzzyScore(query, text) {
-      const q = (query || "").toLowerCase();
-      const t = (text || "").toLowerCase();
-      if (!q) return 999;
+    <!-- 🔍 Tekstihaku -->
+    <input id="q" placeholder="Sanahaku (myös katkennut: maiem)" />
 
-      if (t.includes(q)) return 200;
+    <!-- CPV -->
+    <input id="cpv" placeholder="CPV-koodi (esim. 714)" />
 
-      let qi = 0;
-      let score = 0;
-      for (let i = 0; i < t.length && qi < q.length; i++) {
-        if (t[i] === q[qi]) {
-          qi++;
-          score++;
-        }
-      }
-      return qi === q.length ? score : 0;
-    }
+    <!-- Sijainti -->
+    <input id="area" placeholder="Alue (Uusimaa, Pirkanmaa...)" />
 
-    function scoreItem(item) {
-      let score = 0;
-      if (item.is_new) score += 4;
-      if ((item.matched_keywords || []).length) score += item.matched_keywords.length * 3;
-      if (item.cpv_primary) score += 2;
-      if ((item.url || "").endsWith(".pdf")) score += 1;
-      return score;
-    }
+    <!-- Hankintayksikkö -->
+    <input id="entity" placeholder="Hankintayksikkö" />
 
-    fetch('./data/procurements.json?v=' + Date.now())
-      .then(r => r.json())
-      .then(data => render(data));
+    <!-- Tyyppi -->
+    <select id="type">
+      <option value="">Kaikki tilat</option>
+      <option>budjetti</option>
+      <option>investointipäätös</option>
+      <option>hankintasuunnitelma</option>
+      <option>hankintakalenteritieto</option>
+      <option>käynnissä oleva hankinta</option>
+      <option>mennyt kilpailutus</option>
+    </select>
 
-    function render(data) {
-      const app = document.getElementById("app");
-      const entities = [...new Set(data.map(x => x.entity).filter(Boolean))].sort();
-      const cpvs = [...new Set(data.map(x => x.cpv_primary).filter(Boolean))].sort();
-      const types = [...new Set(data.map(x => x.item_type).filter(Boolean))].sort();
-      const topLead = [...data].sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+    <!-- Päivämäärä -->
+    <input id="fromDate" type="date"/>
+    <input id="toDate" type="date"/>
 
-      app.innerHTML = `
-        <div class="top">
-          <div class="panel" style="flex:1; min-width:260px;">
-            <h1 style="margin:0;">HankintaSeuranta v4-lite</h1>
-            <div class="muted">CPV, fuzzy-haku, historia ja agenttisivu GitHub-only mallilla</div>
-          </div>
-          <div class="stat">
-            <div class="muted">Aktiivisia rivejä</div>
-            <div style="font-size:28px; font-weight:700;" id="countValue">${data.length}</div>
-          </div>
-          <button id="csvBtn" class="btn green">Lataa CSV</button>
-          <a href="./history.html" class="btn">Historia</a>
-          <a href="./agent.html" class="btn">AI-agentti</a>
-        </div>
+    <!-- Uudet -->
+    <label><input type="checkbox" id="newOnly"/> Vain uudet</label>
 
-        ${topLead ? `
-          <div class="hero">
-            <div class="badge badge-hot">Top opportunity</div>
-            <div class="title">${safe(topLead.title)}</div>
-            <div class="muted">${safe(topLead.entity)} · ${safe(topLead.item_type)} · ${safe(topLead.cpv_primary)} ${safe(topLead.cpv_label)}</div>
-            <div style="margin-top:10px;">
-              ${(topLead.matched_keywords || []).map(t => `<span class="tag">${safe(t)}</span>`).join('')}
-            </div>
-            <div style="margin-top:12px;">
-              <a class="btn primary" href="${safe(topLead.url)}" target="_blank">Avaa top-liidi</a>
-            </div>
-          </div>
-        ` : ''}
-
-        <div class="filters">
-          <input id="q" class="input" placeholder="Hae myös katkenneilla sanoilla, esim. maiem" style="flex:1; min-width:220px;" />
-          <select id="entity" class="select"><option value="">Kaikki hankintayksiköt</option>${entities.map(x => `<option>${safe(x)}</option>`).join('')}</select>
-          <select id="cpv" class="select"><option value="">Kaikki CPV-koodit</option>${cpvs.map(x => `<option>${safe(x)}</option>`).join('')}</select>
-          <select id="type" class="select"><option value="">Kaikki tyypit</option>${types.map(x => `<option>${safe(x)}</option>`).join('')}</select>
-          <label class="panel"><input id="newOnly" type="checkbox"> Vain uudet</label>
-        </div>
-
-        <div id="results" class="grid"></div>
-      `;
-
-      const q = document.getElementById("q");
-      const entity = document.getElementById("entity");
-      const cpv = document.getElementById("cpv");
-      const type = document.getElementById("type");
-      const newOnly = document.getElementById("newOnly");
-      const results = document.getElementById("results");
-      const countValue = document.getElementById("countValue");
-      const csvBtn = document.getElementById("csvBtn");
-
-      function draw() {
-        const query = (q.value || "").trim().toLowerCase();
-
-        const filtered = data
-          .filter(item => {
-            const text = item.search_text || "";
-            const matchesText = !query || fuzzyScore(query, text) > 0;
-            const matchesEntity = !entity.value || item.entity === entity.value;
-            const matchesCpv = !cpv.value || item.cpv_primary === cpv.value;
-            const matchesType = !type.value || item.item_type === type.value;
-            const matchesNew = !newOnly.checked || !!item.is_new;
-            return matchesText && matchesEntity && matchesCpv && matchesType && matchesNew;
-          })
-          .sort((a, b) => {
-            const fa = fuzzyScore(query, a.search_text || "");
-            const fb = fuzzyScore(query, b.search_text || "");
-            return Math.max(scoreItem(b), fb) - Math.max(scoreItem(a), fa);
-          });
-
-        countValue.textContent = filtered.length;
-
-        results.innerHTML = filtered.map(item => `
-          <div class="card">
-            <div>
-              <strong>${safe(item.entity)}</strong>
-              ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
-              ${scoreItem(item) >= 8 ? '<span class="badge badge-hot">KUUMA</span>' : ''}
-            </div>
-            <div class="title">${safe(item.title)}</div>
-            <div class="muted">${safe(item.item_type)} · ${safe(item.cpv_primary)} ${safe(item.cpv_label)}</div>
-            <div class="muted" style="margin-top:6px;">Lähde: ${safe(item.source_name)} · Alue: ${safe(item.area)}</div>
-            <div class="muted" style="margin-top:6px;">Julkaistu: ${safe(item.published_at)} · Viimeksi nähty: ${safe(item.last_seen_at)}</div>
-            <div style="margin-top:10px;">
-              ${(item.matched_keywords || []).map(t => `<span class="tag">${safe(t)}</span>`).join('')}
-            </div>
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-              <a class="btn primary" href="${safe(item.url)}" target="_blank">Avaa hankinta</a>
-              ${item.source_page ? `<a class="btn" href="${safe(item.source_page)}" target="_blank">Alkuperäinen sivu</a>` : ''}
-              ${item.document_url ? `<a class="btn" href="${safe(item.document_url)}" target="_blank">Tiedosto</a>` : ''}
-            </div>
-          </div>
-        `).join('');
-
-        csvBtn.onclick = () => {
-          const rows = [
-            ["entity","title","cpv_primary","cpv_label","item_type","source_name","area","url","source_page","published_at","last_seen_at","is_new","matched_keywords"],
-            ...filtered.map(item => [
-              item.entity || "",
-              item.title || "",
-              item.cpv_primary || "",
-              item.cpv_label || "",
-              item.item_type || "",
-              item.source_name || "",
-              item.area || "",
-              item.url || "",
-              item.source_page || "",
-              item.published_at || "",
-              item.last_seen_at || "",
-              item.is_new ? "true" : "false",
-              (item.matched_keywords || []).join("|")
-            ])
-          ];
-
-          const csv = rows.map(row => row.map(value => `"${String(value).replaceAll('"','""')}"`).join(",")).join("\\n");
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "hankintaseuranta-v4-lite.csv";
-          a.click();
-          URL.revokeObjectURL(url);
-        };
-      }
-
-      q.addEventListener("input", draw);
-      entity.addEventListener("change", draw);
-      cpv.addEventListener("change", draw);
-      type.addEventListener("change", draw);
-      newOnly.addEventListener("change", draw);
-
-      draw();
-    }
-  </script>
-</body>
-</html>      padding: 14px 18px;
-      border-radius: 14px;
-      min-width: 120px;
-    }
-    .stat-label {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-    .export-btn {
-      background: #16a34a;
-      color: white;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .hero {
-      background: linear-gradient(135deg, #0f172a, #111827);
-      border: 1px solid #1f2937;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-    .hero-label {
-      display: inline-block;
-      font-size: 12px;
-      background: #1d4ed8;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-    .hero h2 {
-      margin: 0 0 10px 0;
-      font-size: 24px;
-      line-height: 1.3;
-    }
-    .hero-meta {
-      color: #93c5fd;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .hero-text {
-      color: #94a3b8;
-      margin-bottom: 14px;
-      word-break: break-word;
-    }
-    .filters {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr auto;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .input, .select {
-      width: 100%;
-      background: #111827;
-      color: #e5e7eb;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 14px;
-    }
-    .check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 12px 14px;
-      min-height: 46px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 16px;
-    }
-    .card {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-    }
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .entity {
-      font-size: 14px;
-      color: #93c5fd;
-      font-weight: 600;
-    }
-    .badges {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    .badge {
-      background: #1d4ed8;
-      color: white;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .badge-hot {
-      background: #dc2626;
-    }
-    .title {
-      font-size: 18px;
-      font-weight: 700;
-      line-height: 1.35;
-      margin-bottom: 10px;
-    }
-    .meta {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 10px;
-      word-break: break-word;
-    }
-    .time {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 14px;
-    }
-    .btn {
-      display: inline-block;
-      background: #2563eb;
-      color: white;
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-    .error {
-      padding: 40px;
-      color: white;
-    }
-    .empty {
-      padding: 24px;
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 16px;
-      color: #94a3b8;
-    }
-    .tags {
-      margin-bottom: 12px;
-    }
-    .tag {
-      display: inline-block;
-      background: #1f2937;
-      color: #cbd5e1;
-      padding: 4px 8px;
-      border-radius: 999px;
-      margin: 0 6px 6px 0;
-      font-size: 12px;
-    }
-    @media (max-width: 800px) {
-      .filters {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="app" class="wrap">
-    <div class="error">Ladataan dataa...</div>
   </div>
 
-  <script>
-    function safe(v) {
-      return String(v || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;');
-    }
+  <div id="count"></div>
+  <div id="results" class="grid"></div>
+</div>
 
-    function scoreItem(item) {
-      let score = 0;
-      if (item.is_new) score += 4;
-      if ((item.matched_keywords || []).length) score += item.matched_keywords.length * 3;
+<script>
+function fuzzy(q, t){
+  q=q.toLowerCase(); t=t.toLowerCase();
+  if(!q) return true;
+  if(t.includes(q)) return true;
+  let i=0;
+  for(let c of t){ if(c===q[i]) i++; if(i===q.length) return true;}
+  return false;
+}
 
-      const text = `${item.title || ''} ${item.source_page || ''}`.toLowerCase();
+function parseDate(d){
+  if(!d) return null;
+  return new Date(d);
+}
 
-      const boosters = [
-        "it", "digital", "kamera", "kulunvalvonta", "rakenn",
-        "konsult", "siivous", "turva", "verkko", "pilvi",
-        "päiväkoti", "koulu", "sairaala"
-      ];
+fetch('./data/procurements.json?v='+Date.now())
+.then(r=>r.json())
+.then(data=>{
 
-      boosters.forEach(word => {
-        if (text.includes(word)) score += 2;
-      });
+const q=document.getElementById('q');
+const cpv=document.getElementById('cpv');
+const area=document.getElementById('area');
+const entity=document.getElementById('entity');
+const type=document.getElementById('type');
+const fromDate=document.getElementById('fromDate');
+const toDate=document.getElementById('toDate');
+const newOnly=document.getElementById('newOnly');
+const results=document.getElementById('results');
+const count=document.getElementById('count');
 
-      if ((item.url || '').toLowerCase().endsWith('.pdf')) score += 1;
+function score(item){
+  let s=0;
+  if(item.is_new) s+=5;
+  if(item.cpv_primary) s+=3;
+  if(item.document_url) s+=2;
+  if((item.matched_keywords||[]).length) s+=item.matched_keywords.length;
+  return s;
+}
 
-      return score;
-    }
+function draw(){
 
-    function renderDashboard(data) {
-      const app = document.getElementById('app');
-      const entities = [...new Set(data.map(x => x.entity).filter(Boolean))].sort();
-      const topLead = [...data].sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+const filtered = data.filter(item=>{
 
-      app.innerHTML = `
-        <div class="top">
-          <div>
-            <h1 style="margin:0; font-size:32px;">HankintaSeuranta</h1>
-            <div style="color:#94a3b8; margin-top:6px;">
-              Julkisten hankintojen päivittäinen seuranta
-            </div>
-          </div>
-          <div class="top-right">
-            <div class="stat">
-              <div class="stat-label">Löytyi</div>
-              <div class="stat-value" id="countValue">${data.length}</div>
-            </div>
-            <button id="exportBtn" class="export-btn">Lataa CSV</button>
-          </div>
-        </div>
+  const text = item.search_text || "";
 
-        ${topLead ? `
-          <div class="hero">
-            <div class="hero-label">Top opportunity</div>
-            <h2>${safe(topLead.title)}</h2>
-            <div class="hero-meta">${safe(topLead.entity)}</div>
-            <div class="hero-text">${safe(topLead.source_page || topLead.url)}</div>
-            ${(topLead.matched_keywords || []).length ? `
-              <div class="tags">
-                ${(topLead.matched_keywords || []).map(tag => `
-                  <span class="tag">${safe(tag)}</span>
-                `).join('')}
-              </div>
-            ` : ''}
-            <a class="btn" href="${safe(topLead.url)}" target="_blank" rel="noopener noreferrer">
-              Avaa top-liidi
-            </a>
-          </div>
-        ` : ''}
+  // 🔍 tekstihaku
+  if(q.value && !fuzzy(q.value,text)) return false;
 
-        <div class="filters">
-          <input id="searchInput" class="input" type="text" placeholder="Hae hankinnoista tai kunnista..." />
-          <select id="entityFilter" class="select">
-            <option value="">Kaikki kunnat / organisaatiot</option>
-            ${entities.map(e => `<option value="${safe(e)}">${safe(e)}</option>`).join('')}
-          </select>
-          <label class="check">
-            <input id="newOnly" type="checkbox" />
-            <span>Vain uudet</span>
-          </label>
-        </div>
+  // CPV
+  if(cpv.value && !(item.cpv_primary||"").includes(cpv.value)) return false;
 
-        <div id="results" class="grid"></div>
-      `;
+  // alue
+  if(area.value && !(item.area||"").toLowerCase().includes(area.value.toLowerCase())) return false;
 
-      const searchInput = document.getElementById('searchInput');
-      const entityFilter = document.getElementById('entityFilter');
-      const newOnly = document.getElementById('newOnly');
-      const results = document.getElementById('results');
-      const countValue = document.getElementById('countValue');
-      const exportBtn = document.getElementById('exportBtn');
+  // hankintayksikkö
+  if(entity.value && !(item.entity||"").toLowerCase().includes(entity.value.toLowerCase())) return false;
 
-      function draw() {
-        const q = (searchInput.value || '').trim().toLowerCase();
-        const entity = entityFilter.value;
-        const onlyNew = newOnly.checked;
+  // tyyppi
+  if(type.value && item.item_type!==type.value) return false;
 
-        const filtered = data
-          .filter(item => {
-            const matchesText =
-              !q ||
-              (item.title || '').toLowerCase().includes(q) ||
-              (item.entity || '').toLowerCase().includes(q) ||
-              (item.source_page || '').toLowerCase().includes(q) ||
-              (item.url || '').toLowerCase().includes(q);
+  // uusi
+  if(newOnly.checked && !item.is_new) return false;
 
-            const matchesEntity = !entity || item.entity === entity;
-            const matchesNew = !onlyNew || !!item.is_new;
+  // päivämäärä
+  const d = parseDate(item.published_at || item.found_at);
+  if(fromDate.value && d < parseDate(fromDate.value)) return false;
+  if(toDate.value && d > parseDate(toDate.value)) return false;
 
-            return matchesText && matchesEntity && matchesNew;
-          })
-          .sort((a, b) => scoreItem(b) - scoreItem(a));
+  return true;
+})
+.sort((a,b)=>score(b)-score(a));
 
-        countValue.textContent = filtered.length;
+count.innerHTML = `<b>${filtered.length}</b> tulosta`;
 
-        if (!filtered.length) {
-          results.innerHTML = `<div class="empty">Ei tuloksia valituilla suodattimilla.</div>`;
-        } else {
-          results.innerHTML = filtered.map(item => `
-            <div class="card">
-              <div class="card-top">
-                <div class="entity">${safe(item.entity)}</div>
-                <div class="badges">
-                  ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
-                  ${scoreItem(item) >= 8 ? '<span class="badge badge-hot">KUUMA</span>' : ''}
-                </div>
-              </div>
+results.innerHTML = filtered.map(item=>`
+<div class="card">
+  <div><b>${item.entity}</b> 
+    ${item.is_new ? '<span class="badge">UUSI</span>' : ''}
+    ${score(item)>8 ? '<span class="badge hot">TOP</span>' : ''}
+  </div>
 
-              <div class="title">${safe(item.title)}</div>
+  <div style="font-weight:bold;margin:6px 0;">${item.title}</div>
 
-              ${item.source_page ? `
-                <div class="meta">Lähdesivu: ${safe(item.source_page)}</div>
-              ` : ''}
+  <div>
+    <span class="tag">${item.item_type}</span>
+    <span class="tag">${item.cpv_primary} ${item.cpv_label||""}</span>
+  </div>
 
-              <div class="time">Ensihavainto: ${safe(item.found_at)}</div>
+  <div style="font-size:13px;color:#94a3b8;margin-top:6px;">
+    ${item.area} · ${item.published_at}
+  </div>
 
-              ${item.matched_keywords && item.matched_keywords.length ? `
-                <div class="tags">
-                  ${item.matched_keywords.map(tag => `
-                    <span class="tag">${safe(tag)}</span>
-                  `).join('')}
-                </div>
-              ` : ''}
+  <div style="margin-top:8px;">
+    ${(item.matched_keywords||[]).map(t=>`<span class="tag">${t}</span>`).join("")}
+  </div>
 
-              <a class="btn" href="${safe(item.url)}" target="_blank" rel="noopener noreferrer">
-                Avaa linkki
-              </a>
-            </div>
-          `).join('');
-        }
+  <div style="margin-top:10px;">
+    <a href="${item.url}" target="_blank">Avaa</a>
+    ${item.document_url ? ` | <a href="${item.document_url}" target="_blank">PDF</a>` : ''}
+  </div>
+</div>
+`).join("");
 
-        exportBtn.onclick = () => {
-          const rows = [
-            ["entity", "title", "url", "source_page", "found_at", "last_seen_at", "is_new", "matched_keywords", "score"],
-            ...filtered.map(item => [
-              item.entity || "",
-              item.title || "",
-              item.url || "",
-              item.source_page || "",
-              item.found_at || "",
-              item.last_seen_at || "",
-              item.is_new ? "true" : "false",
-              (item.matched_keywords || []).join("|"),
-              String(scoreItem(item))
-            ])
-          ];
+}
 
-          const csv = rows.map(row =>
-            row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(",")
-          ).join("\\n");
+[q,cpv,area,entity,type,fromDate,toDate,newOnly]
+.forEach(el=>el.addEventListener("input",draw));
 
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const downloadUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = downloadUrl;
-          a.download = "hankintaseuranta-export.csv";
-          a.click();
-          URL.revokeObjectURL(downloadUrl);
-        };
-      }
-
-      searchInput.addEventListener('input', draw);
-      entityFilter.addEventListener('change', draw);
-      newOnly.addEventListener('change', draw);
-
-      draw();
-    }
-
-    fetch('./data/procurements.json?v=' + Date.now())
-      .then(res => {
-        if (!res.ok) throw new Error('JSON-lataus epäonnistui');
-        return res.json();
-      })
-      .then(data => renderDashboard(data))
-      .catch(err => {
-        console.error(err);
-        document.getElementById('app').innerHTML = `
-          <div class="error">
-            Datan lataus epäonnistui. Tarkista että tiedosto <b>data/procurements.json</b> löytyy.
-          </div>
-        `;
-      });
-  </script>
+draw();
+});
+</script>
 </body>
 </html>
