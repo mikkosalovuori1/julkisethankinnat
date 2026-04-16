@@ -8,9 +8,12 @@ import requests
 from datetime import datetime
 from parsers import route_parser
 from pdf_extract import extract_pdf_text
+from ocr_extract import extract_text_from_pdf_ocr, extract_text_from_image_bytes
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
+
+IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp"]
 
 def load_json(path, default):
     p = Path(path)
@@ -21,6 +24,19 @@ def load_json(path, default):
             return json.load(f)
     except Exception:
         return default
+
+def looks_like_image(url: str) -> bool:
+    url_l = (url or "").lower()
+    return any(url_l.endswith(ext) for ext in IMAGE_EXTENSIONS)
+
+def download_image_bytes(url: str) -> bytes:
+    r = requests.get(
+        url,
+        timeout=45,
+        headers={"User-Agent": "Mozilla/5.0 HankintaSeurantaBot/1.0"}
+    )
+    r.raise_for_status()
+    return r.content
 
 with open(SOURCES_FILE, "r", encoding="utf-8") as f:
     sources = json.load(f)
@@ -55,7 +71,31 @@ for source in sources:
                 pdf_text = old_item.get("pdf_text", "") if old_item else ""
 
                 if document_url and document_url.lower().endswith(".pdf"):
-                    pdf_text = extract_pdf_text(document_url)
+                    normal_text = extract_pdf_text(document_url)
+                    pdf_text = normal_text
+
+                    normalized = (normal_text or "").strip()
+                    # Jos tavallista tekstiä ei juuri tullut, ajetaan OCR
+                    if (
+                        not normalized
+                        or normalized.startswith("PDF_ERROR")
+                        or normalized.startswith("PDF_EXTRACT_ERROR")
+                        or len(normalized) < 300
+                    ):
+                        ocr_text = extract_text_from_pdf_ocr(document_url)
+                        if ocr_text and not ocr_text.startswith("OCR_PDF_ERROR"):
+                            if normalized and not normalized.startswith("PDF_ERROR") and not normalized.startswith("PDF_EXTRACT_ERROR"):
+                                pdf_text = (normalized + "\n\n--- OCR ---\n\n" + ocr_text)[:30000]
+                            else:
+                                pdf_text = ocr_text
+
+                elif document_url and looks_like_image(document_url):
+                    try:
+                        img_bytes = download_image_bytes(document_url)
+                        img_text = extract_text_from_image_bytes(img_bytes)
+                        pdf_text = img_text
+                    except Exception as e:
+                        pdf_text = f"OCR_IMAGE_DOWNLOAD_ERROR: {str(e)}"
 
                 results.append({
                     "id": full_url,
