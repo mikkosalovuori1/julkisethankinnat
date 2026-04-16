@@ -34,6 +34,9 @@ pre {
   border:1px solid #1f2937;
 }
 a { color:#60a5fa; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
+.item-card { background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:12px; }
+.muted { color:#94a3b8; font-size:13px; }
 </style>
 </head>
 
@@ -87,6 +90,21 @@ function makeSnippets(text, query){
   return snippets.join("<br><br>");
 }
 
+function overlapScore(a, b){
+  let s = 0;
+  const aThemes = new Set(a.theme_tags || []);
+  const aSignals = new Set(a.signal_tags || []);
+  const aKw = new Set(a.matched_keywords || []);
+
+  (b.theme_tags || []).forEach(x => { if(aThemes.has(x)) s += 3; });
+  (b.signal_tags || []).forEach(x => { if(aSignals.has(x)) s += 4; });
+  (b.matched_keywords || []).forEach(x => { if(aKw.has(x)) s += 2; });
+
+  if(a.cpv_primary && b.cpv_primary && a.cpv_primary === b.cpv_primary) s += 5;
+  if(a.entity && b.entity && a.entity === b.entity) s += 1;
+  return s;
+}
+
 const itemId = getParam("id");
 
 fetch('./data/procurements.json?v=' + Date.now())
@@ -98,6 +116,11 @@ fetch('./data/procurements.json?v=' + Date.now())
     document.getElementById("app").innerHTML = `<div class="card">Hankintaa ei löytynyt.</div>`;
     return;
   }
+
+  const similar = data
+    .filter(x => (x.id !== item.id) && overlapScore(item, x) > 0)
+    .sort((a, b) => overlapScore(item, b) - overlapScore(item, a))
+    .slice(0, 6);
 
   document.getElementById("app").innerHTML = `
     <div class="card">
@@ -126,6 +149,9 @@ fetch('./data/procurements.json?v=' + Date.now())
 
       <div class="label">Määräaika</div>
       <div class="value">${esc(item.deadline_at || "-")}</div>
+
+      <div class="label">Budjetoitu arvo</div>
+      <div class="value">${esc(item.estimated_budget_value || "-")}</div>
 
       <div class="label">Liitetiedostot</div>
       <div class="value">
@@ -158,6 +184,25 @@ fetch('./data/procurements.json?v=' + Date.now())
       </div>
 
       <div id="pdfSearchResults" class="value">Syötä hakusana ja paina “Hae tiedostosta”.</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Samankaltaiset hankinnat</div>
+      <div class="grid">
+        ${similar.length ? similar.map(s => `
+          <div class="item-card">
+            <div style="font-weight:bold; margin-bottom:6px;">${esc(s.title)}</div>
+            <div class="muted">${esc(s.entity)} · ${esc(s.item_type || "-")}</div>
+            <div style="margin-top:8px;">
+              ${(s.theme_tags || []).slice(0,2).map(t => `<span class="tag theme">${esc(t)}</span>`).join("")}
+              ${(s.signal_tags || []).slice(0,2).map(t => `<span class="tag signal">${esc(t)}</span>`).join("")}
+            </div>
+            <div style="margin-top:10px;">
+              <a href="detail.html?id=${encodeURIComponent(s.id || s.url)}">Avaa tiedot</a>
+            </div>
+          </div>
+        `).join("") : 'Ei samankaltaisia hankintoja löytynyt.'}
+      </div>
     </div>
 
     <div class="card">
