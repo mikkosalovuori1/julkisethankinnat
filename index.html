@@ -551,5 +551,32 @@ fetch('./data/procurements.json')
     console.error("Fetch failed:", err);
   });
 </script>
+<script>
+fetch('./data/procurements.json?v=' + Date.now())
+  .then(res => res.json())
+  .then(data => {
+    const root = document.getElementById('root') || document.body;
+
+    root.innerHTML = `
+      <div style="padding:12px; color:white; background:#0a0e1a; border-bottom:1px solid #333;">
+        Löytyi ${data.length} hankintaa
+      </div>
+    ` + data.map(item => `
+      <div style="padding:12px; border-bottom:1px solid #333; color:white; background:#0a0e1a;">
+        <div><strong>${item.entity || ''}</strong></div>
+        <div>${item.title || ''}</div>
+        <div>
+          <a href="${item.url || '#'}" target="_blank" style="color:#60a5fa;">
+            ${item.url || ''}
+          </a>
+        </div>
+      </div>
+    `).join('');
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Datan lataus epäonnistui');
+  });
+</script>
 </body>
 </html>
