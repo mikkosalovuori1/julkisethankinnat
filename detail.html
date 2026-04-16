@@ -17,6 +17,7 @@ body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
 .tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
 .theme { background:#0f766e; }
 .signal { background:#7c3aed; }
+.budget { background:#92400e; }
 .label { color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
 .value { margin-bottom:14px; line-height:1.5; }
 input, button {
@@ -126,6 +127,8 @@ fetch('./data/procurements.json?v=' + Date.now())
     <div class="card">
       <h1 style="margin-top:0;">${esc(item.title)}</h1>
 
+      ${item.generated_from_budget ? `<div style="margin-bottom:10px;"><span class="tag budget">Poimittu budjettidokumentista</span></div>` : ''}
+
       <div class="label">Hankinnan kuvaus lyhyesti</div>
       <div class="value">${esc(item.ai_summary || "Ei yhteenvetoa saatavilla.")}</div>
 
@@ -152,6 +155,11 @@ fetch('./data/procurements.json?v=' + Date.now())
 
       <div class="label">Budjetoitu arvo</div>
       <div class="value">${esc(item.estimated_budget_value || "-")}</div>
+
+      ${item.parent_budget_title ? `
+        <div class="label">Emobudjettidokumentti</div>
+        <div class="value">${esc(item.parent_budget_title)}</div>
+      ` : ''}
 
       <div class="label">Liitetiedostot</div>
       <div class="value">
