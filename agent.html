@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI-agentti</title>
+  <title>AI-agentti v6</title>
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#0a0e1a; color:#e5e7eb; }
     .wrap { max-width:1100px; margin:0 auto; padding:32px 20px; }
     .panel { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; margin-bottom:16px; }
     textarea, button { width:100%; padding:14px; border-radius:12px; border:1px solid #1f2937; background:#111827; color:#e5e7eb; }
     button { background:#2563eb; color:white; cursor:pointer; margin-top:10px; }
-    .answer { white-space:pre-wrap; line-height:1.5; }
+    .answer { white-space:pre-wrap; line-height:1.6; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Hankinta-agentti</h1>
+    <h1>Hankinta-agentti v6</h1>
     <div class="panel">
       <div>Kysy esimerkiksi:</div>
       <ul>
@@ -23,6 +23,7 @@
         <li>etsi maisemasuunnitteluun liittyvät hankinnat</li>
         <li>mitkä ovat uudet hankinnat Helsingissä</li>
         <li>näytä budjetit tai investointipäätökset</li>
+        <li>mitä PDF-sisällöissä kerrotaan rakentamisesta</li>
       </ul>
     </div>
 
@@ -68,8 +69,10 @@
           fuzzy(q, item.title || "") ||
           fuzzy(q, (item.matched_keywords || []).join(" ")) ||
           fuzzy(q, item.item_type || "") ||
-          fuzzy(q, item.entity || "")
-        ).slice(0, 12);
+          fuzzy(q, item.entity || "") ||
+          fuzzy(q, item.ai_summary || "") ||
+          fuzzy(q, item.pdf_text || "")
+        ).slice(0, 10);
 
         if (!hits.length) {
           answer.textContent = "En löytänyt osumia. Kokeile lyhyempää hakua tai katkennutta sanaa, kuten 'maiem' tai 'rakenn'.";
@@ -78,7 +81,8 @@
 
         const byType = {};
         hits.forEach(item => {
-          byType[item.item_type || "muu"] = (byType[item.item_type || "muu"] || 0) + 1;
+          const k = item.item_type || "muu";
+          byType[k] = (byType[k] || 0) + 1;
         });
 
         const summary = [
@@ -89,7 +93,14 @@
           "",
           "Parhaat osumat:",
           ...hits.map((item, i) =>
-            `${i + 1}. ${item.title}\n   Hankintayksikkö: ${item.entity}\n   Tyyppi: ${item.item_type}\n   CPV: ${item.cpv_primary} ${item.cpv_label}\n   Alue: ${item.area}\n   Linkki: ${item.url}\n`
+            `${i + 1}. ${item.title}
+   Hankintayksikkö: ${item.entity}
+   Tyyppi: ${item.item_type}
+   CPV: ${item.cpv_primary} ${item.cpv_label}
+   Alue: ${item.area}
+   Yhteenveto: ${(item.ai_summary || "").slice(0, 280)}
+   Linkki: ${item.url}
+`
           )
         ];
 
