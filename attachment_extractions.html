@@ -28,6 +28,7 @@ button { background:#2563eb; cursor:pointer; }
 .signal { background:#7c3aed; }
 .attachment { background:#92400e; }
 .ocr { background:#b45309; }
+.hint { background:#1d4ed8; }
 .muted { color:#94a3b8; font-size:13px; }
 .section-title { font-size:12px; color:#94a3b8; margin-top:10px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
 .topnav { display:flex; gap:10px; margin:12px 0 20px 0; flex-wrap:wrap; }
@@ -63,9 +64,10 @@ button { background:#2563eb; cursor:pointer; }
     </select>
 
     <select id="sourceMode">
-      <option value="">Kaikki poiminnat</option>
+      <option value="">Kaikki poiminnat ja vihjeet</option>
+      <option value="attachment">Vain oikeat liitepoiminnat</option>
       <option value="ocr">Vain OCR-lähteiset</option>
-      <option value="attachment">Kaikki liitepoiminnat</option>
+      <option value="hint">Vain liitevihjeet</option>
     </select>
 
     <button id="searchBtn">HAE</button>
@@ -104,7 +106,7 @@ function renderTags(items, cls){
 
 function snippet(text){
   const raw = String(text || "").replace(/\s+/g, " ").trim();
-  return esc(raw.slice(0, 220)) + (raw.length > 220 ? "..." : "");
+  return esc(raw.slice(0, 240)) + (raw.length > 240 ? "..." : "");
 }
 
 fetch('./data/procurements.json?v=' + Date.now())
@@ -122,11 +124,20 @@ fetch('./data/procurements.json?v=' + Date.now())
   const count = document.getElementById('count');
   const results = document.getElementById('results');
 
-  const extracted = data.filter(item =>
-    item.generated_from_attachment === true ||
-    String(item.pdf_text || "").includes("--- OCR ---") ||
-    String(item.pdf_text || "").startsWith("OCR_")
-  );
+  const extracted = data.filter(item => {
+    const isAttachmentExtraction = item.generated_from_attachment === true;
+    const isOCR = String(item.pdf_text || "").includes("--- OCR ---")
+      || String(item.pdf_text || "").startsWith("OCR_")
+      || String(item.pdf_text || "").startsWith("OCR_PDF_ERROR")
+      || String(item.pdf_text || "").startsWith("OCR_IMAGE");
+    const isHint =
+      !!item.document_url ||
+      !!item.pdf_text ||
+      (item.signal_tags || []).includes("poimittu liitetiedostosta") ||
+      !!item.parent_attachment_title;
+
+    return isAttachmentExtraction || isOCR || isHint;
+  });
 
   const allThemes = [...new Set(
     extracted.flatMap(item => Array.isArray(item.theme_tags) ? item.theme_tags : []).filter(Boolean)
@@ -144,17 +155,26 @@ fetch('./data/procurements.json?v=' + Date.now())
     `<option value="">Kaikki signaalit</option>` +
     allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
 
-  debug.innerHTML = `Poimintoja: <b>${extracted.length}</b> · Teemoja: <b>${allThemes.length}</b> · Signaaleja: <b>${allSignals.length}</b>`;
+  const totalGenerated = extracted.filter(x => x.generated_from_attachment === true).length;
+  const totalOCR = extracted.filter(x =>
+    String(x.pdf_text || "").includes("--- OCR ---") ||
+    String(x.pdf_text || "").startsWith("OCR_") ||
+    String(x.pdf_text || "").startsWith("OCR_PDF_ERROR") ||
+    String(x.pdf_text || "").startsWith("OCR_IMAGE")
+  ).length;
+
+  debug.innerHTML = `Poimintoja: <b>${totalGenerated}</b> · OCR-kohteita: <b>${totalOCR}</b> · Näkymässä yhteensä: <b>${extracted.length}</b>`;
 
   function score(item){
     let s = 0;
-    if(item.generated_from_attachment) s += 6;
-    if(String(item.pdf_text || "").includes("--- OCR ---")) s += 4;
+    if(item.generated_from_attachment) s += 8;
+    if(String(item.pdf_text || "").includes("--- OCR ---")) s += 5;
     if(String(item.pdf_text || "").startsWith("OCR_")) s += 4;
     if(item.estimated_budget_value) s += 3;
     if((item.signal_tags || []).length) s += (item.signal_tags || []).length * 2;
     if((item.theme_tags || []).length) s += (item.theme_tags || []).length * 2;
     if(item.cpv_primary) s += 2;
+    if(item.document_url) s += 1;
     return s;
   }
 
@@ -169,65 +189,77 @@ fetch('./data/procurements.json?v=' + Date.now())
       if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
       if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
 
-      if(sourceMode.value === "ocr"){
-        const isOcr = String(item.pdf_text || "").includes("--- OCR ---") || String(item.pdf_text || "").startsWith("OCR_");
-        if(!isOcr) return false;
-      }
+      const isAttachmentExtraction = item.generated_from_attachment === true;
+      const isOCR = String(item.pdf_text || "").includes("--- OCR ---")
+        || String(item.pdf_text || "").startsWith("OCR_")
+        || String(item.pdf_text || "").startsWith("OCR_PDF_ERROR")
+        || String(item.pdf_text || "").startsWith("OCR_IMAGE");
+      const isHint = !isAttachmentExtraction && !isOCR;
 
-      if(sourceMode.value === "attachment"){
-        if(item.generated_from_attachment !== true) return false;
-      }
+      if(sourceMode.value === "attachment" && !isAttachmentExtraction) return false;
+      if(sourceMode.value === "ocr" && !isOCR) return false;
+      if(sourceMode.value === "hint" && !isHint) return false;
 
       return true;
     }).sort((a, b) => score(b) - score(a));
 
     count.innerHTML = `<b>${filtered.length}</b> tulosta`;
 
-    results.innerHTML = filtered.map(item => `
-      <div class="card">
-        <div>
-          <b>${esc(item.entity)}</b>
-          ${item.generated_from_attachment ? '<span class="tag attachment">LIITEPOIMINTA</span>' : ''}
-          ${(String(item.pdf_text || "").includes("--- OCR ---") || String(item.pdf_text || "").startsWith("OCR_")) ? '<span class="tag ocr">OCR</span>' : ''}
+    results.innerHTML = filtered.map(item => {
+      const isAttachmentExtraction = item.generated_from_attachment === true;
+      const isOCR = String(item.pdf_text || "").includes("--- OCR ---")
+        || String(item.pdf_text || "").startsWith("OCR_")
+        || String(item.pdf_text || "").startsWith("OCR_PDF_ERROR")
+        || String(item.pdf_text || "").startsWith("OCR_IMAGE");
+      const isHint = !isAttachmentExtraction && !isOCR;
+
+      return `
+        <div class="card">
+          <div>
+            <b>${esc(item.entity)}</b>
+            ${isAttachmentExtraction ? '<span class="tag attachment">LIITEPOIMINTA</span>' : ''}
+            ${isOCR ? '<span class="tag ocr">OCR</span>' : ''}
+            ${isHint ? '<span class="tag hint">LIITEVIHJE</span>' : ''}
+          </div>
+
+          <div style="font-weight:bold; margin:8px 0;">${esc(item.title)}</div>
+
+          <div>
+            ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
+            ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+          </div>
+
+          ${item.estimated_budget_value ? `
+            <div class="muted" style="margin-top:8px;">Arvioitu arvo: <b>${esc(item.estimated_budget_value)}</b></div>
+          ` : ''}
+
+          ${item.parent_attachment_title ? `
+            <div class="muted" style="margin-top:6px;">Emoliite: ${esc(item.parent_attachment_title)}</div>
+          ` : ''}
+
+          <div class="muted" style="margin-top:8px;">
+            ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
+          </div>
+
+          ${(item.theme_tags || []).length ? `
+            <div class="section-title">Teemat</div>
+            <div>${renderTags(item.theme_tags, "theme")}</div>
+          ` : ''}
+
+          ${(item.signal_tags || []).length ? `
+            <div class="section-title">Signaalit</div>
+            <div>${renderTags(item.signal_tags, "signal")}</div>
+          ` : ''}
+
+          <div class="section-title">Yhteenveto</div>
+          <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
+
+          <div style="margin-top:12px;">
+            <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
+          </div>
         </div>
-
-        <div style="font-weight:bold; margin:8px 0;">${esc(item.title)}</div>
-
-        <div>
-          ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
-          ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
-        </div>
-
-        ${item.estimated_budget_value ? `
-          <div class="muted" style="margin-top:8px;">Arvioitu arvo: <b>${esc(item.estimated_budget_value)}</b></div>
-        ` : ''}
-
-        ${item.parent_attachment_title ? `
-          <div class="muted" style="margin-top:6px;">Emoliite: ${esc(item.parent_attachment_title)}</div>
-        ` : ''}
-
-        <div class="muted" style="margin-top:8px;">
-          ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
-        </div>
-
-        ${(item.theme_tags || []).length ? `
-          <div class="section-title">Teemat</div>
-          <div>${renderTags(item.theme_tags, "theme")}</div>
-        ` : ''}
-
-        ${(item.signal_tags || []).length ? `
-          <div class="section-title">Signaalit</div>
-          <div>${renderTags(item.signal_tags, "signal")}</div>
-        ` : ''}
-
-        <div class="section-title">Yhteenveto</div>
-        <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
-
-        <div style="margin-top:12px;">
-          <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
-        </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
   searchBtn.onclick = search;
