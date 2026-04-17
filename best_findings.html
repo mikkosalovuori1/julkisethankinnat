@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<title>Parhaat löydökset</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
+.wrap { max-width:1400px; margin:0 auto; padding:24px; }
+.panel { background:#111827; border:1px solid #1f2937; border-radius:14px; padding:14px; margin-bottom:16px; }
+.filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+input, select, button {
+  padding:10px; border-radius:10px;
+  border:1px solid #1f2937;
+  background:#111827; color:white;
+}
+button { background:#2563eb; cursor:pointer; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:16px; }
+.card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; }
+.tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
+.theme { background:#0f766e; }
+.signal { background:#7c3aed; }
+.attachment { background:#92400e; }
+.conf-high { background:#166534; }
+.muted { color:#94a3b8; font-size:13px; }
+.section-title { font-size:12px; color:#94a3b8; margin-top:12px; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+.topnav { display:flex; gap:10px; margin:12px 0 20px 0; flex-wrap:wrap; }
+.topnav a {
+  display:inline-block; padding:10px 14px; background:#2563eb; color:white;
+  text-decoration:none; border-radius:10px;
+}
+.snippet-image {
+  width:100%;
+  border-radius:12px;
+  border:1px solid #1f2937;
+  margin-top:10px;
+}
+.score {
+  font-weight:bold;
+  color:#86efac;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>⭐ Parhaat löydökset</h1>
+
+  <div class="topnav">
+    <a href="index.html">← Pääsivu</a>
+    <a href="attachment_extractions.html">🔦 Liitepoiminnat</a>
+    <a href="agent.html">🤖 Agentti</a>
+  </div>
+
+  <div class="panel filters">
+    <input id="q" placeholder="Sanahaku" />
+    <input id="entity" placeholder="Hankintayksikkö" />
+    <input id="area" placeholder="Alue" />
+    <input id="cpv" placeholder="CPV-koodi" />
+
+    <select id="themeFilter">
+      <option value="">Kaikki teemat</option>
+    </select>
+
+    <select id="signalFilter">
+      <option value="">Kaikki signaalit</option>
+    </select>
+
+    <select id="imageOnly">
+      <option value="">Kaikki</option>
+      <option value="yes">Vain ne joissa osumakuva</option>
+    </select>
+
+    <button id="searchBtn">HAE</button>
+  </div>
+
+  <div id="debug" class="muted" style="margin-bottom:8px;"></div>
+  <div id="count" class="muted" style="margin-bottom:12px;"></div>
+  <div id="results" class="grid"></div>
+</div>
+
+<script>
+function esc(v){
+  return String(v || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function fuzzy(q, t){
+  q = (q || "").toLowerCase();
+  t = (t || "").toLowerCase();
+  if(!q) return true;
+  if(t.includes(q)) return true;
+  let i = 0;
+  for(let c of t){
+    if(c === q[i]) i++;
+    if(i === q.length) return true;
+  }
+  return false;
+}
+
+function renderTags(items, cls){
+  return (items || []).map(t => `<span class="tag ${cls}">${esc(t)}</span>`).join("");
+}
+
+function snippet(text){
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  return esc(raw.slice(0, 220)) + (raw.length > 220 ? "..." : "");
+}
+
+function leadScore(item){
+  let s = 0;
+  if(item.generated_from_attachment) s += 10;
+  if(item.extraction_confidence === "korkea") s += 10;
+  if(item.estimated_budget_value) s += 6;
+  if(item.cpv_primary) s += 3;
+  if(item.deadline_at) s += 5;
+  if(item.contract_end_date) s += 4;
+  if(item.snippet_image) s += 5;
+  if((item.signal_tags || []).includes("kilpailutus tulossa")) s += 4;
+  if((item.signal_tags || []).includes("budjetoitu")) s += 4;
+  if((item.signal_tags || []).includes("uusintahankinta")) s += 4;
+  if((item.signal_tags || []).includes("sopimus päättymässä")) s += 4;
+  return s;
+}
+
+fetch('./data/procurements.json?v=' + Date.now())
+.then(r => r.json())
+.then(data => {
+  const q = document.getElementById('q');
+  const entity = document.getElementById('entity');
+  const area = document.getElementById('area');
+  const cpv = document.getElementById('cpv');
+  const themeFilter = document.getElementById('themeFilter');
+  const signalFilter = document.getElementById('signalFilter');
+  const imageOnly = document.getElementById('imageOnly');
+  const searchBtn = document.getElementById('searchBtn');
+  const debug = document.getElementById('debug');
+  const count = document.getElementById('count');
+  const results = document.getElementById('results');
+
+  const best = data.filter(item =>
+    item.generated_from_attachment === true &&
+    item.extraction_confidence === "korkea"
+  );
+
+  const allThemes = [...new Set(
+    best.flatMap(item => Array.isArray(item.theme_tags) ? item.theme_tags : []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  const allSignals = [...new Set(
+    best.flatMap(item => Array.isArray(item.signal_tags) ? item.signal_tags : []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'fi'));
+
+  themeFilter.innerHTML =
+    `<option value="">Kaikki teemat</option>` +
+    allThemes.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+
+  signalFilter.innerHTML =
+    `<option value="">Kaikki signaalit</option>` +
+    allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+  const withImages = best.filter(x => x.snippet_image).length;
+  debug.innerHTML = `Korkean luottamusasteen löydöksiä: <b>${best.length}</b> · Osumakuvalla: <b>${withImages}</b>`;
+
+  function search(){
+    const filtered = best.filter(item => {
+      const text = item.search_text || "";
+
+      if(q.value && !fuzzy(q.value, text)) return false;
+      if(entity.value && !String(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
+      if(area.value && !String(item.area || "").toLowerCase().includes(area.value.toLowerCase())) return false;
+      if(cpv.value && !String(item.cpv_primary || "").includes(cpv.value)) return false;
+      if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
+      if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
+      if(imageOnly.value === "yes" && !item.snippet_image) return false;
+
+      return true;
+    }).sort((a, b) => leadScore(b) - leadScore(a));
+
+    count.innerHTML = `<b>${filtered.length}</b> tulosta`;
+
+    results.innerHTML = filtered.map(item => `
+      <div class="card">
+        <div>
+          <b>${esc(item.entity)}</b>
+          <span class="tag attachment">LIITEPOIMINTA</span>
+          <span class="tag conf-high">KORKEA</span>
+        </div>
+
+        <div style="font-size:20px; font-weight:bold; margin:10px 0 6px 0;">${esc(item.title)}</div>
+
+        <div class="muted">
+          Liidipisteet: <span class="score">${leadScore(item)}</span>
+        </div>
+
+        <div style="margin-top:8px;">
+          ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
+          ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+          ${item.deadline_at ? `<span class="tag">${esc(item.deadline_at)}</span>` : ''}
+        </div>
+
+        ${item.estimated_budget_value ? `
+          <div class="section-title">Arvioitu arvo</div>
+          <div><b>${esc(item.estimated_budget_value)}</b></div>
+        ` : ''}
+
+        <div class="section-title">Tiivistelmä</div>
+        <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
+
+        ${(item.theme_tags || []).length ? `
+          <div class="section-title">Teemat</div>
+          <div>${renderTags(item.theme_tags, "theme")}</div>
+        ` : ''}
+
+        ${(item.signal_tags || []).length ? `
+          <div class="section-title">Signaalit</div>
+          <div>${renderTags(item.signal_tags, "signal")}</div>
+        ` : ''}
+
+        ${item.snippet_image ? `
+          <div class="section-title">Kohta liitteessä</div>
+          <img class="snippet-image" src="${esc(item.snippet_image)}?v=${Date.now()}" alt="Osumakuva" />
+        ` : ''}
+
+        ${item.parent_attachment_title ? `
+          <div class="section-title">Emoliite</div>
+          <div class="muted">${esc(item.parent_attachment_title)}</div>
+        ` : ''}
+
+        <div class="section-title">Perustiedot</div>
+        <div class="muted">
+          ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
+        </div>
+
+        <div style="margin-top:14px;">
+          <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  searchBtn.onclick = search;
+  search();
+});
+</script>
+</body>
+</html>
