@@ -246,7 +246,7 @@ def looks_like_procurement_candidate(text):
         "ict", "it", "maisemasuunnittelu", "vihersuunnittelu"
     ]
 
-    money_patterns = [
+    value_patterns = [
         r"\d[\d\s]{1,15},\d{2}\s?€",
         r"\d[\d\s]{1,15}\s?€",
         r"\d[\d\s]{1,15}\s?eur",
@@ -255,11 +255,25 @@ def looks_like_procurement_candidate(text):
     ]
 
     has_keyword = any(w in tl for w in keyword_hits)
-    has_money = any(re.search(p, t, flags=re.IGNORECASE) for p in money_patterns)
+    has_money = any(re.search(p, t, flags=re.IGNORECASE) for p in value_patterns)
     has_deadline = bool(extract_deadline(t))
     has_contract_end = bool(extract_contract_end(t))
 
     return has_keyword or has_money or has_deadline or has_contract_end
+
+def refine_title(title):
+    t = normalize_text(title)
+
+    # Poista selviä loppuhäntiä
+    t = re.sub(r"\b\d[\d\s]{1,15},\d{2}\s?€\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\b\d[\d\s]{1,15}\s?€\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\b\d[\d\s]{1,15}\s?eur\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\b\d[\d\s]{1,15}\s?milj\.?\s?€\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\b\d[\d\s]{1,15}\s?m€\b", "", t, flags=re.IGNORECASE)
+
+    t = re.sub(r"\b(talousarvio|budjetti|määräraha|investointiohjelma|liite|pdf|sivu \d+)\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\s+", " ", t).strip(" -–—:;,.")
+    return t[:140].strip()
 
 def split_attachment_candidate(text):
     t = normalize_text(text)
@@ -294,20 +308,17 @@ def split_attachment_candidate(text):
         if after:
             desc = after
 
-    # Jos löytyy kaksoispiste, pilkotaan sen perusteella
     if ":" in title and len(title.split(":")[0]) > 3:
         left, right = title.split(":", 1)
-        if len(left.strip()) >= 4:
+        if len(left.strip()) >= 4 and len(left.strip()) < 140:
             title = left.strip()
             if not desc:
                 desc = right.strip()
 
-    title = normalize_text(title)
+    title = refine_title(title)
 
     if len(title) < 4:
         return None
-    if len(title) > 180:
-        title = title[:180].strip()
 
     if not desc:
         desc = f"Poimittu liitetiedostosta: {title}"
@@ -353,14 +364,12 @@ def extract_attachment_items(item, cpv_rules, keyword_rules):
 
     candidates = []
 
-    # 1. rivipoiminta
     for idx, line in enumerate(lines):
         if looks_like_procurement_candidate(line):
             context_lines = lines[max(0, idx-1):min(len(lines), idx+2)]
             context = normalize_text(" ".join(context_lines))
             candidates.append(("line", idx, context))
 
-    # 2. kappalepoiminta
     for idx, para in enumerate(paragraphs):
         if looks_like_procurement_candidate(para):
             candidates.append(("paragraph", idx, para[:500]))
@@ -408,7 +417,6 @@ def extract_attachment_items(item, cpv_rules, keyword_rules):
             matched_keywords=matched_keywords
         )
 
-        # liian heikot pois
         if confidence == "matala" and not budget_value and len(parsed_line["title"].split()) < 3:
             continue
 
@@ -457,7 +465,9 @@ def extract_attachment_items(item, cpv_rules, keyword_rules):
             "parent_attachment_id": item.get("id", ""),
             "parent_attachment_title": item.get("title", ""),
             "extraction_confidence": confidence,
-            "extraction_source_kind": source_kind
+            "extraction_source_kind": source_kind,
+            "snippet_image": item.get("snippet_image", ""),
+            "snippet_page": item.get("snippet_page", "")
         })
 
     return generated[:120]
@@ -529,6 +539,8 @@ for item in procurements:
         "parent_attachment_title": item.get("parent_attachment_title", ""),
         "extraction_confidence": item.get("extraction_confidence", ""),
         "extraction_source_kind": item.get("extraction_source_kind", ""),
+        "snippet_image": item.get("snippet_image", ""),
+        "snippet_page": item.get("snippet_page", ""),
         "search_text": " ".join([
             text,
             " ".join(matched_keywords),
