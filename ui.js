@@ -86,8 +86,8 @@ function leadScore(item) {
 
 async function loadProcurementData() {
   const urls = [
-    './data/procurements.json?v=' + Date.now(),
-    './history/2026/procurements-2026.json?v=' + Date.now()
+    "./data/procurements.json?v=" + Date.now(),
+    "./history/2026/procurements-2026.json?v=" + Date.now()
   ];
 
   for (const url of urls) {
@@ -99,7 +99,7 @@ async function loadProcurementData() {
         return data;
       }
     } catch (e) {
-      // jatka fallbackiin
+      // fallback seuraavaan
     }
   }
 
