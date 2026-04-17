@@ -12,6 +12,7 @@ from ocr_extract import extract_text_from_pdf_ocr, extract_text_from_image_bytes
 
 SOURCES_FILE = "data/sources.json"
 PROCUREMENTS_FILE = "data/procurements.json"
+TMP_PROCUREMENTS_FILE = "data/procurements.tmp.json"
 
 IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp"]
 
@@ -24,6 +25,13 @@ def load_json(path, default):
             return json.load(f)
     except Exception:
         return default
+
+def atomic_write_json(path, data):
+    path = Path(path)
+    tmp_path = path.with_suffix(path.suffix + ".writing")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    tmp_path.replace(path)
 
 def looks_like_image(url: str) -> bool:
     url_l = (url or "").lower()
@@ -75,7 +83,6 @@ for source in sources:
                     pdf_text = normal_text
 
                     normalized = (normal_text or "").strip()
-                    # Jos tavallista tekstiä ei juuri tullut, ajetaan OCR
                     if (
                         not normalized
                         or normalized.startswith("PDF_ERROR")
@@ -140,5 +147,7 @@ for item in results:
 
 results = list(unique.values())
 
-with open(PROCUREMENTS_FILE, "w", encoding="utf-8") as f:
-    json.dump(results, f, ensure_ascii=False, indent=2)
+# kirjoita ensin temp snapshot
+atomic_write_json(TMP_PROCUREMENTS_FILE, results)
+# julkaise vasta valmis tiedosto
+atomic_write_json(PROCUREMENTS_FILE, results)
