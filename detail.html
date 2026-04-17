@@ -18,6 +18,9 @@ body { margin:0; font-family:Arial; background:#0a0e1a; color:#e5e7eb; }
 .theme { background:#0f766e; }
 .signal { background:#7c3aed; }
 .attachment { background:#92400e; color:white; }
+.conf-high { background:#166534; }
+.conf-mid { background:#a16207; }
+.conf-low { background:#991b1b; }
 .label { color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
 .value { margin-bottom:14px; line-height:1.5; }
 input, button {
@@ -38,6 +41,12 @@ a { color:#60a5fa; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
 .item-card { background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:12px; }
 .muted { color:#94a3b8; font-size:13px; }
+.snippet-image {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  display: block;
+}
 </style>
 </head>
 
@@ -66,6 +75,13 @@ function getParam(name){
 
 function renderTags(items, cls){
   return (items || []).map(t => `<span class="tag ${cls}">${esc(t)}</span>`).join("");
+}
+
+function confidenceClass(v){
+  if(v === "korkea") return "conf-high";
+  if(v === "keskitaso") return "conf-mid";
+  if(v === "matala") return "conf-low";
+  return "";
 }
 
 function makeSnippets(text, query){
@@ -132,7 +148,14 @@ fetch('./data/procurements.json?v=' + Date.now())
     <div class="card">
       <h1 style="margin-top:0;">${esc(item.title)}</h1>
 
-      ${item.generated_from_attachment ? `<div style="margin-bottom:10px;"><span class="tag attachment">Poimittu liitetiedostosta</span></div>` : ''}
+      ${item.generated_from_attachment ? `<div style="margin-bottom:10px;">
+        <span class="tag attachment">Poimittu liitetiedostosta</span>
+        ${item.extraction_confidence ? `<span class="tag ${confidenceClass(item.extraction_confidence)}">${esc(item.extraction_confidence)}</span>` : ''}
+        ${item.extraction_source_kind ? `<span class="tag">${esc(item.extraction_source_kind)}</span>` : ''}
+      </div>` : ''}
+
+      <div class="label">Hankittava asia</div>
+      <div class="value"><b>${esc(item.title)}</b></div>
 
       <div class="label">Hankinnan kuvaus lyhyesti</div>
       <div class="value">${esc(item.ai_summary || "Ei yhteenvetoa saatavilla.")}</div>
@@ -189,6 +212,16 @@ fetch('./data/procurements.json?v=' + Date.now())
       ` : ''}
     </div>
 
+    ${item.snippet_image ? `
+      <div class="card">
+        <div class="label">Kohta liitteessä, jossa hankittava asia näkyy</div>
+        <div class="value">
+          <img class="snippet-image" src="${esc(item.snippet_image)}?v=${Date.now()}" alt="Liiteosuma" />
+          ${item.snippet_page ? `<div class="muted" style="margin-top:8px;">Sivu ${esc(item.snippet_page)}</div>` : ''}
+        </div>
+      </div>
+    ` : ''}
+
     ${childItems.length ? `
       <div class="card">
         <div class="label">Tästä liitetiedostosta poimitut hankinnat</div>
@@ -207,7 +240,7 @@ fetch('./data/procurements.json?v=' + Date.now())
     <div class="card">
       <div class="label">Hae liitetiedoston tiedoista</div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-        <input id="pdfQuery" placeholder="Kirjoita hakusana, esim. maisema, sopimus, määräaika" style="flex:1; min-width:260px;" />
+        <input id="pdfQuery" placeholder="Kirjoita hakusana, esim. keittiö, sopimus, määräaika" style="flex:1; min-width:260px;" />
         <button id="pdfSearchBtn">Hae tiedostosta</button>
       </div>
 
