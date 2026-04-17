@@ -30,6 +30,17 @@ jobs:
         run: |
           pip install requests beautifulsoup4 pypdf pdf2image pillow pytesseract
 
+      - name: Mark crawl started
+        run: |
+          mkdir -p data
+          cat > data/status.json <<'EOF'
+          {
+            "crawl_running": true,
+            "last_updated": "",
+            "row_count": 0
+          }
+          EOF
+
       - name: Generate municipality sources
         run: python scripts/generate_sources.py
 
@@ -45,11 +56,14 @@ jobs:
       - name: Update history and search index
         run: python scripts/archive.py
 
+      - name: Write status
+        run: python scripts/write_status.py
+
       - name: Commit updated data
         run: |
           git config user.name "bot"
           git config user.email "bot@users.noreply.github.com"
           mkdir -p data/snippets
-          git add data/sources.json data/procurements.json data/search_index.json history/2026/procurements-2026.json data/snippets
+          git add data/status.json data/sources.json data/procurements.json data/search_index.json history/2026/procurements-2026.json data/snippets
           git commit -m "update procurement data" || echo "no changes"
           git push
