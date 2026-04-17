@@ -3,61 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hankinnat</title>
+  <title>HankintaSeuranta</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div class="page">
 
-  <h1>Hankinnat</h1>
-
-  <div class="card">
-    <input id="q" placeholder="Hae..." class="input"/>
-    <button id="searchBtn" class="button">Hae</button>
-  </div>
-
-  <div id="meta"></div>
-  <div id="results"></div>
-
-</div>
-
-<script src="ui.js"></script>
-<script>
-
-loadProcurementData().then(data => {
-
-  const q = document.getElementById("q");
-  const btn = document.getElementById("searchBtn");
-  const results = document.getElementById("results");
-  const meta = document.getElementById("meta");
-
-  function render() {
-
-    const filtered = data.filter(item => {
-      if (!q.value) return true;
-      return (item.search_text || "").includes(q.value.toLowerCase());
-    });
-
-    meta.innerHTML = filtered.length + " tulosta";
-
-    results.innerHTML = filtered.map(item => `
-      <div class="card">
-        <b>${item.title}</b><br>
-        ${item.entity}<br>
-        ${item.area || ""}<br><br>
-
-        <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">
-          Avaa
-        </a>
-      </div>
-    `).join("");
-  }
-
-  btn.onclick = render;
-  render();
-
-});
-
-</script>
-</body>
-</html>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <h1>HankintaSeuranta</h
