@@ -20,7 +20,11 @@ input, select, button {
   border:1px solid #1f2937;
   background:#111827; color:white;
 }
-button { background:#2563eb; cursor:pointer; }
+button { cursor:pointer; }
+.primary-btn { background:#2563eb; }
+.accept-btn { background:#166534; }
+.reject-btn { background:#991b1b; }
+.clear-btn { background:#374151; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:16px; }
 .card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; }
 .tag { background:#1f2937; padding:4px 8px; border-radius:999px; font-size:12px; margin:3px; display:inline-block; }
@@ -28,6 +32,9 @@ button { background:#2563eb; cursor:pointer; }
 .signal { background:#7c3aed; }
 .attachment { background:#92400e; }
 .conf-high { background:#166534; }
+.review-accepted { background:#14532d; }
+.review-rejected { background:#7f1d1d; }
+.review-pending { background:#334155; }
 .muted { color:#94a3b8; font-size:13px; }
 .section-title { font-size:12px; color:#94a3b8; margin-top:12px; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
 .topnav { display:flex; gap:10px; margin:12px 0 20px 0; flex-wrap:wrap; }
@@ -44,6 +51,17 @@ button { background:#2563eb; cursor:pointer; }
 .score {
   font-weight:bold;
   color:#86efac;
+}
+.action-row {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.small-note {
+  font-size:12px;
+  color:#94a3b8;
+  margin-top:6px;
 }
 </style>
 </head>
@@ -77,7 +95,14 @@ button { background:#2563eb; cursor:pointer; }
       <option value="yes">Vain ne joissa osumakuva</option>
     </select>
 
-    <button id="searchBtn">HAE</button>
+    <select id="reviewFilter">
+      <option value="">Kaikki statukset</option>
+      <option value="accepted">Hyväksytyt</option>
+      <option value="rejected">Hylätyt</option>
+      <option value="pending">Käsittelemättömät</option>
+    </select>
+
+    <button id="searchBtn" class="primary-btn">HAE</button>
   </div>
 
   <div id="debug" class="muted" style="margin-bottom:8px;"></div>
@@ -86,6 +111,8 @@ button { background:#2563eb; cursor:pointer; }
 </div>
 
 <script>
+const REVIEW_STORAGE_KEY = "best_findings_reviews_v1";
+
 function esc(v){
   return String(v || "")
     .replaceAll("&", "&amp;")
@@ -116,6 +143,39 @@ function snippet(text){
   return esc(raw.slice(0, 220)) + (raw.length > 220 ? "..." : "");
 }
 
+function loadReviews() {
+  try {
+    return JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveReviews(obj) {
+  localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(obj));
+}
+
+function getReviewStatus(itemId) {
+  const reviews = loadReviews();
+  return reviews[itemId] || "pending";
+}
+
+function setReviewStatus(itemId, status) {
+  const reviews = loadReviews();
+  if (status === "pending") {
+    delete reviews[itemId];
+  } else {
+    reviews[itemId] = status;
+  }
+  saveReviews(reviews);
+}
+
+function reviewTag(status) {
+  if (status === "accepted") return '<span class="tag review-accepted">HYVÄKSYTTY</span>';
+  if (status === "rejected") return '<span class="tag review-rejected">HYLÄTTY</span>';
+  return '<span class="tag review-pending">KÄSITTELEMÄTÖN</span>';
+}
+
 function leadScore(item){
   let s = 0;
   if(item.generated_from_attachment) s += 10;
@@ -129,6 +189,11 @@ function leadScore(item){
   if((item.signal_tags || []).includes("budjetoitu")) s += 4;
   if((item.signal_tags || []).includes("uusintahankinta")) s += 4;
   if((item.signal_tags || []).includes("sopimus päättymässä")) s += 4;
+
+  const review = getReviewStatus(item.id || item.url);
+  if (review === "accepted") s += 20;
+  if (review === "rejected") s -= 20;
+
   return s;
 }
 
@@ -142,6 +207,7 @@ fetch('./data/procurements.json?v=' + Date.now())
   const themeFilter = document.getElementById('themeFilter');
   const signalFilter = document.getElementById('signalFilter');
   const imageOnly = document.getElementById('imageOnly');
+  const reviewFilter = document.getElementById('reviewFilter');
   const searchBtn = document.getElementById('searchBtn');
   const debug = document.getElementById('debug');
   const count = document.getElementById('count');
@@ -168,12 +234,28 @@ fetch('./data/procurements.json?v=' + Date.now())
     `<option value="">Kaikki signaalit</option>` +
     allSignals.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
 
-  const withImages = best.filter(x => x.snippet_image).length;
-  debug.innerHTML = `Korkean luottamusasteen löydöksiä: <b>${best.length}</b> · Osumakuvalla: <b>${withImages}</b>`;
+  function renderStats() {
+    const reviews = loadReviews();
+    const accepted = best.filter(x => reviews[x.id || x.url] === "accepted").length;
+    const rejected = best.filter(x => reviews[x.id || x.url] === "rejected").length;
+    const pending = best.length - accepted - rejected;
+    const withImages = best.filter(x => x.snippet_image).length;
+
+    debug.innerHTML = `
+      Korkean luottamusasteen löydöksiä: <b>${best.length}</b> ·
+      Osumakuvalla: <b>${withImages}</b> ·
+      Hyväksytty: <b>${accepted}</b> ·
+      Hylätty: <b>${rejected}</b> ·
+      Käsittelemätön: <b>${pending}</b>
+    `;
+  }
 
   function search(){
+    renderStats();
+
     const filtered = best.filter(item => {
       const text = item.search_text || "";
+      const reviewStatus = getReviewStatus(item.id || item.url);
 
       if(q.value && !fuzzy(q.value, text)) return false;
       if(entity.value && !String(item.entity || "").toLowerCase().includes(entity.value.toLowerCase())) return false;
@@ -182,70 +264,99 @@ fetch('./data/procurements.json?v=' + Date.now())
       if(themeFilter.value && !(item.theme_tags || []).includes(themeFilter.value)) return false;
       if(signalFilter.value && !(item.signal_tags || []).includes(signalFilter.value)) return false;
       if(imageOnly.value === "yes" && !item.snippet_image) return false;
+      if(reviewFilter.value && reviewStatus !== reviewFilter.value) return false;
 
       return true;
     }).sort((a, b) => leadScore(b) - leadScore(a));
 
     count.innerHTML = `<b>${filtered.length}</b> tulosta`;
 
-    results.innerHTML = filtered.map(item => `
-      <div class="card">
-        <div>
-          <b>${esc(item.entity)}</b>
-          <span class="tag attachment">LIITEPOIMINTA</span>
-          <span class="tag conf-high">KORKEA</span>
+    results.innerHTML = filtered.map(item => {
+      const itemKey = item.id || item.url;
+      const reviewStatus = getReviewStatus(itemKey);
+
+      return `
+        <div class="card">
+          <div>
+            <b>${esc(item.entity)}</b>
+            <span class="tag attachment">LIITEPOIMINTA</span>
+            <span class="tag conf-high">KORKEA</span>
+            ${reviewTag(reviewStatus)}
+          </div>
+
+          <div style="font-size:20px; font-weight:bold; margin:10px 0 6px 0;">${esc(item.title)}</div>
+
+          <div class="muted">
+            Liidipisteet: <span class="score">${leadScore(item)}</span>
+          </div>
+
+          <div style="margin-top:8px;">
+            ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
+            ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
+            ${item.deadline_at ? `<span class="tag">${esc(item.deadline_at)}</span>` : ''}
+          </div>
+
+          ${item.estimated_budget_value ? `
+            <div class="section-title">Arvioitu arvo</div>
+            <div><b>${esc(item.estimated_budget_value)}</b></div>
+          ` : ''}
+
+          <div class="section-title">Tiivistelmä</div>
+          <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
+
+          ${(item.theme_tags || []).length ? `
+            <div class="section-title">Teemat</div>
+            <div>${renderTags(item.theme_tags, "theme")}</div>
+          ` : ''}
+
+          ${(item.signal_tags || []).length ? `
+            <div class="section-title">Signaalit</div>
+            <div>${renderTags(item.signal_tags, "signal")}</div>
+          ` : ''}
+
+          ${item.snippet_image ? `
+            <div class="section-title">Kohta liitteessä</div>
+            <img class="snippet-image" src="${esc(item.snippet_image)}?v=${Date.now()}" alt="Osumakuva" />
+          ` : ''}
+
+          ${item.parent_attachment_title ? `
+            <div class="section-title">Emoliite</div>
+            <div class="muted">${esc(item.parent_attachment_title)}</div>
+          ` : ''}
+
+          <div class="section-title">Perustiedot</div>
+          <div class="muted">
+            ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
+          </div>
+
+          <div class="action-row">
+            <button class="accept-btn" data-id="${esc(itemKey)}">Hyväksy</button>
+            <button class="reject-btn" data-id="${esc(itemKey)}">Hylkää</button>
+            <button class="clear-btn" data-clear-id="${esc(itemKey)}">Tyhjennä</button>
+            <a href="detail.html?id=${encodeURIComponent(itemKey)}" style="display:inline-block;padding:10px 14px;background:#2563eb;color:white;text-decoration:none;border-radius:10px;">Avaa tiedot</a>
+          </div>
+
+          <div class="small-note">Tallennus tapahtuu tähän selaimeen.</div>
         </div>
+      `;
+    }).join("");
 
-        <div style="font-size:20px; font-weight:bold; margin:10px 0 6px 0;">${esc(item.title)}</div>
+    results.querySelectorAll("[data-id]").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-id");
+        const status = btn.textContent.trim() === "Hyväksy" ? "accepted" : "rejected";
+        setReviewStatus(id, status);
+        search();
+      };
+    });
 
-        <div class="muted">
-          Liidipisteet: <span class="score">${leadScore(item)}</span>
-        </div>
-
-        <div style="margin-top:8px;">
-          ${item.item_type ? `<span class="tag">${esc(item.item_type)}</span>` : ''}
-          ${(item.cpv_primary || item.cpv_label) ? `<span class="tag">${esc(item.cpv_primary)} ${esc(item.cpv_label || "")}</span>` : ''}
-          ${item.deadline_at ? `<span class="tag">${esc(item.deadline_at)}</span>` : ''}
-        </div>
-
-        ${item.estimated_budget_value ? `
-          <div class="section-title">Arvioitu arvo</div>
-          <div><b>${esc(item.estimated_budget_value)}</b></div>
-        ` : ''}
-
-        <div class="section-title">Tiivistelmä</div>
-        <div class="muted">${snippet(item.ai_summary || item.pdf_text || "")}</div>
-
-        ${(item.theme_tags || []).length ? `
-          <div class="section-title">Teemat</div>
-          <div>${renderTags(item.theme_tags, "theme")}</div>
-        ` : ''}
-
-        ${(item.signal_tags || []).length ? `
-          <div class="section-title">Signaalit</div>
-          <div>${renderTags(item.signal_tags, "signal")}</div>
-        ` : ''}
-
-        ${item.snippet_image ? `
-          <div class="section-title">Kohta liitteessä</div>
-          <img class="snippet-image" src="${esc(item.snippet_image)}?v=${Date.now()}" alt="Osumakuva" />
-        ` : ''}
-
-        ${item.parent_attachment_title ? `
-          <div class="section-title">Emoliite</div>
-          <div class="muted">${esc(item.parent_attachment_title)}</div>
-        ` : ''}
-
-        <div class="section-title">Perustiedot</div>
-        <div class="muted">
-          ${esc(item.area)} · ${esc(item.published_at || item.found_at || "-")}
-        </div>
-
-        <div style="margin-top:14px;">
-          <a href="detail.html?id=${encodeURIComponent(item.id || item.url)}">Avaa tiedot</a>
-        </div>
-      </div>
-    `).join("");
+    results.querySelectorAll("[data-clear-id]").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-clear-id");
+        setReviewStatus(id, "pending");
+        search();
+      };
+    });
   }
 
   searchBtn.onclick = search;
