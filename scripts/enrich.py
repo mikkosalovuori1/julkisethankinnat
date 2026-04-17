@@ -63,6 +63,7 @@ def find_cpv(text, rules):
 def extract_date_by_triggers(text, trigger_words):
     if not text:
         return ""
+
     t = " ".join(str(text).split())
     t_l = t.lower()
 
@@ -78,6 +79,7 @@ def extract_date_by_triggers(text, trigger_words):
         matches = re.findall(pattern, t_l, flags=re.IGNORECASE)
         if matches:
             return matches[0]
+
     return ""
 
 def extract_contract_end(text):
@@ -107,7 +109,10 @@ def extract_budget_value(text):
         r"(\d[\d\s]{1,15}\s?m€)"
     ]
 
-    trigger_words = ["budjetti", "määräraha", "arvioitu arvo", "kustannusarvio", "budjetoitu", "investointi", "hinta", "arvo"]
+    trigger_words = [
+        "budjetti", "määräraha", "arvioitu arvo", "kustannusarvio",
+        "budjetoitu", "investointi", "hinta", "arvo", "eur", "€"
+    ]
     tl = t.lower()
 
     if not any(w in tl for w in trigger_words):
@@ -155,7 +160,11 @@ def fallback_tags(text, item_type):
     if any(x in text_l for x in ["it", "ict", "ohjelmisto", "järjestelmä", "api", "digitaal", "pilvipalvelu"]):
         theme_tags.append("IT ja digitalisaatio")
 
-    if any(x in text_l for x in ["rakentaminen", "urakka", "saneeraus", "peruskorjaus", "silta", "katu", "maanrakennus", "suunnittelu", "keittiö"]):
+    if any(x in text_l for x in [
+        "rakentaminen", "urakka", "saneeraus", "peruskorjaus", "silta",
+        "katu", "maanrakennus", "suunnittelu", "keittiö", "kaluste",
+        "piha", "remontti"
+    ]):
         theme_tags.append("Rakentaminen ja infra")
 
     if any(x in text_l for x in ["kulunvalvonta", "kamera", "vartiointi", "paloilmoitin", "turvallisuus"]):
@@ -200,30 +209,44 @@ def build_ai_summary(item_type, cpv_label, matched_keywords, signal_tags, pdf_te
         parts.append(f"Signaalit: {', '.join(signal_tags[:6])}.")
 
     cleaned_pdf = " ".join((pdf_text or "").split())
-    if cleaned_pdf and not cleaned_pdf.startswith("PDF_ERROR") and not cleaned_pdf.startswith("OCR_"):
-        parts.append(cleaned_pdf[:700])
-    elif cleaned_pdf:
+    if cleaned_pdf:
         parts.append(cleaned_pdf[:700])
 
     return " ".join(parts).strip()
 
-def looks_like_procurement_candidate(line):
-    l = line.strip()
-    ll = l.lower()
+def normalize_text(text):
+    return re.sub(r"\s+", " ", str(text or "")).strip()
 
-    if len(l) < 8:
+def split_paragraphs(text):
+    raw = str(text or "")
+    parts = re.split(r"\n\s*\n+", raw)
+    parts = [normalize_text(p) for p in parts if normalize_text(p)]
+    return parts
+
+def split_lines(text):
+    raw = str(text or "")
+    lines = [normalize_text(line) for line in raw.splitlines()]
+    return [line for line in lines if line]
+
+def looks_like_procurement_candidate(text):
+    t = normalize_text(text)
+    tl = t.lower()
+
+    if len(t) < 6:
         return False
-    if len(l) > 220:
+    if len(t) > 320:
         return False
 
-    meaningful_words = [
+    keyword_hits = [
         "hankinta", "suunnittelu", "urakka", "palvelu", "järjestelmä",
         "uusinta", "rakentaminen", "siivous", "kulunvalvonta", "keittiö",
         "saneeraus", "peruskorjaus", "toimitus", "kilpailutus", "laite",
-        "kaluste", "remontti", "piha", "koulu", "päiväkoti"
+        "kaluste", "remontti", "piha", "koulu", "päiväkoti", "valaistus",
+        "kameravalvonta", "kiinteistöhuolto", "kunnossapito", "ohjelmisto",
+        "ict", "it", "maisemasuunnittelu", "vihersuunnittelu"
     ]
 
-    value_patterns = [
+    money_patterns = [
         r"\d[\d\s]{1,15},\d{2}\s?€",
         r"\d[\d\s]{1,15}\s?€",
         r"\d[\d\s]{1,15}\s?eur",
@@ -231,13 +254,17 @@ def looks_like_procurement_candidate(line):
         r"\d[\d\s]{1,15}\s?m€"
     ]
 
-    has_meaningful_word = any(w in ll for w in meaningful_words)
-    has_money = any(re.search(p, l, flags=re.IGNORECASE) for p in value_patterns)
+    has_keyword = any(w in tl for w in keyword_hits)
+    has_money = any(re.search(p, t, flags=re.IGNORECASE) for p in money_patterns)
+    has_deadline = bool(extract_deadline(t))
+    has_contract_end = bool(extract_contract_end(t))
 
-    return has_meaningful_word or has_money
+    return has_keyword or has_money or has_deadline or has_contract_end
 
-def split_attachment_line(line):
-    l = " ".join(line.split())
+def split_attachment_candidate(text):
+    t = normalize_text(text)
+    if not t:
+        return None
 
     value_patterns = [
         r"(\d[\d\s]{1,15},\d{2}\s?€)",
@@ -250,64 +277,106 @@ def split_attachment_line(line):
     value = ""
     match = None
     for p in value_patterns:
-        m = re.search(p, l, flags=re.IGNORECASE)
+        m = re.search(p, t, flags=re.IGNORECASE)
         if m:
             value = m.group(1).strip()
             match = m
             break
 
-    if match:
-        title = l[:match.start()].strip(" -–—:;,.")
-        desc = l[match.end():].strip(" -–—:;,.")
-    else:
-        title = l
-        desc = ""
+    title = t
+    desc = ""
 
-    title = re.sub(r"\s+", " ", title).strip()
+    if match:
+        before = t[:match.start()].strip(" -–—:;,.")
+        after = t[match.end():].strip(" -–—:;,.")
+        if before:
+            title = before
+        if after:
+            desc = after
+
+    # Jos löytyy kaksoispiste, pilkotaan sen perusteella
+    if ":" in title and len(title.split(":")[0]) > 3:
+        left, right = title.split(":", 1)
+        if len(left.strip()) >= 4:
+            title = left.strip()
+            if not desc:
+                desc = right.strip()
+
+    title = normalize_text(title)
 
     if len(title) < 4:
         return None
-    if len(title) > 160:
-        return None
+    if len(title) > 180:
+        title = title[:180].strip()
 
     if not desc:
         desc = f"Poimittu liitetiedostosta: {title}"
+    desc = normalize_text(desc)[:350]
 
     return {
         "title": title,
-        "description": desc[:300],
+        "description": desc,
         "value": value
     }
+
+def estimate_extraction_confidence(text, title, value, cpv, matched_keywords):
+    score = 0
+
+    if len(title.split()) >= 2:
+        score += 2
+    if value:
+        score += 3
+    if cpv:
+        score += 2
+    if matched_keywords:
+        score += min(len(matched_keywords), 3)
+    if extract_deadline(text):
+        score += 2
+    if extract_contract_end(text):
+        score += 1
+    if "hankinta" in text.lower():
+        score += 1
+
+    if score >= 8:
+        return "korkea"
+    if score >= 5:
+        return "keskitaso"
+    return "matala"
 
 def extract_attachment_items(item, cpv_rules, keyword_rules):
     source_text = item.get("pdf_text", "") or ""
     if not source_text:
         return []
 
-    lines = [re.sub(r"\s+", " ", line).strip() for line in source_text.splitlines()]
-    lines = [line for line in lines if line]
+    lines = split_lines(source_text)
+    paragraphs = split_paragraphs(source_text)
+
+    candidates = []
+
+    # 1. rivipoiminta
+    for idx, line in enumerate(lines):
+        if looks_like_procurement_candidate(line):
+            context_lines = lines[max(0, idx-1):min(len(lines), idx+2)]
+            context = normalize_text(" ".join(context_lines))
+            candidates.append(("line", idx, context))
+
+    # 2. kappalepoiminta
+    for idx, para in enumerate(paragraphs):
+        if looks_like_procurement_candidate(para):
+            candidates.append(("paragraph", idx, para[:500]))
 
     generated = []
-    seen = set()
+    seen_titles = set()
 
-    for idx, line in enumerate(lines):
-        if not looks_like_procurement_candidate(line):
-            continue
-
-        parsed_line = split_attachment_line(line)
+    for source_kind, idx, context_text in candidates:
+        parsed_line = split_attachment_candidate(context_text)
         if not parsed_line:
             continue
 
         title_key = parsed_line["title"].lower()
-        if title_key in seen:
+        if title_key in seen_titles:
             continue
-        seen.add(title_key)
-
-        context_lines = lines[max(0, idx-1):min(len(lines), idx+2)]
-        context_text = " ".join(context_lines)
-
-        if len(parsed_line["title"].split()) < 2 and not parsed_line["value"]:
-            continue
+        seen_titles.add(title_key)
 
         cpv, cpv_label = find_cpv(context_text, cpv_rules)
         item_type = classify_type(context_text)
@@ -331,7 +400,19 @@ def extract_attachment_items(item, cpv_rules, keyword_rules):
         if not theme_tags:
             theme_tags = ["Muut hankinnat"]
 
-        child_id = f"{item.get('id','attachment')}-attachment-item-{idx}"
+        confidence = estimate_extraction_confidence(
+            text=context_text,
+            title=parsed_line["title"],
+            value=budget_value,
+            cpv=cpv,
+            matched_keywords=matched_keywords
+        )
+
+        # liian heikot pois
+        if confidence == "matala" and not budget_value and len(parsed_line["title"].split()) < 3:
+            continue
+
+        child_id = f"{item.get('id','attachment')}-{source_kind}-item-{idx}"
 
         generated.append({
             "id": child_id,
@@ -374,10 +455,12 @@ def extract_attachment_items(item, cpv_rules, keyword_rules):
             ]).lower(),
             "generated_from_attachment": True,
             "parent_attachment_id": item.get("id", ""),
-            "parent_attachment_title": item.get("title", "")
+            "parent_attachment_title": item.get("title", ""),
+            "extraction_confidence": confidence,
+            "extraction_source_kind": source_kind
         })
 
-    return generated[:80]
+    return generated[:120]
 
 procurements = load_json(PROCUREMENTS_FILE, [])
 cpv_rules = load_json(CPV_RULES_FILE, [])
@@ -444,6 +527,8 @@ for item in procurements:
         "generated_from_attachment": item.get("generated_from_attachment", False),
         "parent_attachment_id": item.get("parent_attachment_id", ""),
         "parent_attachment_title": item.get("parent_attachment_title", ""),
+        "extraction_confidence": item.get("extraction_confidence", ""),
+        "extraction_source_kind": item.get("extraction_source_kind", ""),
         "search_text": " ".join([
             text,
             " ".join(matched_keywords),
