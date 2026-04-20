@@ -2,51 +2,308 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hankinta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hankinnan tiedot</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
 <div class="page">
-  <a href="index.html">← takaisin</a>
-  <div id="app">Ladataan...</div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <h1>Hankinnan tiedot</h1>
+        <p>Selkeä näkymä hankittavaan asiaan</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="index.html">Etusivu</a>
+      <a href="attachment_extractions.html">Liitepoiminnat</a>
+      <a href="best_findings.html">Parhaat löydökset</a>
+    </div>
+  </div>
+
+  <a class="back-link" href="index.html">← Takaisin hakunäkymään</a>
+
+  <div id="app" class="card">
+    Ladataan hankintaa...
+  </div>
+
 </div>
 
 <script src="ui.js"></script>
 <script>
-
-function getId() {
-  return new URL(location.href).searchParams.get("id");
+function getParam(name) {
+  return new URL(window.location.href).searchParams.get(name) || "";
 }
 
-loadProcurementData().then(data => {
+function confidenceChip(value) {
+  if (value === "korkea") return `<span class="chip success">Korkea luottamus</span>`;
+  if (value === "keskitaso") return `<span class="chip warn">Keskitaso</span>`;
+  if (value === "matala") return `<span class="chip danger">Matala</span>`;
+  return "";
+}
 
-  const id = getId();
-  const item = data.find(x => x.id === id || x.url === id);
+function statusChips(item) {
+  return `
+    ${item.generated_from_attachment ? `<span class="chip warn">Liitepoiminta</span>` : ""}
+    ${confidenceChip(item.extraction_confidence || "")}
+    ${item.extraction_source_kind ? `<span class="chip">${esc(item.extraction_source_kind)}</span>` : ""}
+    ${item.deadline_at ? `<span class="chip info">Määräaika ${esc(item.deadline_at)}</span>` : ""}
+    ${item.contract_end_date ? `<span class="chip danger">Päättyy ${esc(item.contract_end_date)}</span>` : ""}
+  `;
+}
+
+function overlapScore(a, b) {
+  let s = 0;
+
+  if (a.cpv_primary && b.cpv_primary && a.cpv_primary === b.cpv_primary) s += 5;
+  if (a.entity && b.entity && a.entity === b.entity) s += 2;
+
+  (a.theme_tags || []).forEach(t => {
+    if ((b.theme_tags || []).includes(t)) s += 2;
+  });
+
+  (a.signal_tags || []).forEach(t => {
+    if ((b.signal_tags || []).includes(t)) s += 2;
+  });
+
+  (a.matched_keywords || []).forEach(t => {
+    if ((b.matched_keywords || []).includes(t)) s += 1;
+  });
+
+  return s;
+}
+
+const itemId = getParam("id");
+
+loadProcurementData().then(data => {
+  const item = data.find(x => x.id === itemId || x.url === itemId);
 
   if (!item) {
-    document.getElementById("app").innerHTML = "Ei löytynyt";
+    document.getElementById("app").innerHTML = `
+      <div class="empty-state">Hankintaa ei löytynyt.</div>
+    `;
     return;
   }
 
-  document.getElementById("app").innerHTML = `
-    <h1>${item.title}</h1>
+  const parentItem = item.parent_attachment_id
+    ? data.find(x => x.id === item.parent_attachment_id)
+    : null;
 
-    <p><b>Organisaatio:</b> ${item.entity}</p>
-    <p><b>Alue:</b> ${item.area || "-"}</p>
-    <p><b>Tyyppi:</b> ${item.item_type || "-"}</p>
-    <p><b>Arvo:</b> ${item.estimated_budget_value || "-"}</p>
-    <p><b>Määräaika:</b> ${item.deadline_at || "-"}</p>
+  const children = data
+    .filter(x => x.parent_attachment_id === item.id)
+    .slice(0, 20);
 
-    <h3>Teksti</h3>
-    <pre style="white-space:pre-wrap;">${item.pdf_text || ""}</pre>
+  const similar = data
+    .filter(x => x.id !== item.id)
+    .map(x => ({ ...x, _score: overlapScore(item, x) }))
+    .filter(x => x._score > 2)
+    .sort((a, b) => b._score - a._score)
+    .slice(0, 6);
 
-    ${item.document_url ? `<p><a href="${item.document_url}" target="_blank">Avaa liite</a></p>` : ""}
+  document.getElementById("app").outerHTML = `
+    <div class="detail-grid">
+
+      <div class="side-stack">
+
+        <div class="card-solid">
+          <div class="chips" style="margin-bottom:14px;">
+            ${statusChips(item)}
+          </div>
+
+          <h1 class="detail-title">${esc(item.title || "Nimetön hankinta")}</h1>
+          <div class="detail-subtitle">
+            ${esc(item.ai_summary || "Ei yhteenvetoa saatavilla.")}
+          </div>
+
+          <div class="section-head">
+            <div>
+              <h2>Perustiedot</h2>
+              <p>Hankittava asia, arvo, aikataulu ja lähteet</p>
+            </div>
+          </div>
+
+          <div class="kv">
+            <div class="kv-item">
+              <div class="kv-label">Hankittava asia</div>
+              <div class="kv-value"><b>${esc(item.title || "-")}</b></div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Hankintayksikkö</div>
+              <div class="kv-value">${esc(item.entity || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Alue</div>
+              <div class="kv-value">${esc(item.area || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Kategoria / CPV</div>
+              <div class="kv-value">${esc(item.cpv_primary || "")} ${esc(item.cpv_label || "")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Tila</div>
+              <div class="kv-value">${esc(item.item_type || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Julkaistu</div>
+              <div class="kv-value">${esc(item.published_at || item.found_at || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Määräaika</div>
+              <div class="kv-value">${esc(item.deadline_at || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Sopimuksen päättyminen</div>
+              <div class="kv-value">${esc(item.contract_end_date || "-")}</div>
+            </div>
+
+            <div class="kv-item">
+              <div class="kv-label">Arvioitu arvo</div>
+              <div class="kv-value">${esc(item.estimated_budget_value || "-")}</div>
+            </div>
+
+            ${parentItem ? `
+              <div class="kv-item">
+                <div class="kv-label">Emoliite</div>
+                <div class="kv-value">
+                  <a href="detail.html?id=${encodeURIComponent(parentItem.id || parentItem.url)}">${esc(parentItem.title)}</a>
+                </div>
+              </div>
+            ` : ""}
+
+            <div class="kv-item">
+              <div class="kv-label">Lähteet</div>
+              <div class="kv-value">
+                ${item.document_url ? `<a href="${esc(item.document_url)}" target="_blank">Avaa liite</a>` : "Ei liitettä"}
+                ${item.source_page ? ` · <a href="${esc(item.source_page)}" target="_blank">Lähdesivu</a>` : ""}
+                ${item.url ? ` · <a href="${esc(item.url)}" target="_blank">Suora linkki</a>` : ""}
+              </div>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <div>
+              <h2>Luokittelu</h2>
+              <p>Teemat, signaalit ja avainsanat</p>
+            </div>
+          </div>
+
+          <div class="chips">
+            ${renderChips(item.theme_tags || [], "theme")}
+            ${renderChips(item.signal_tags || [], "signal")}
+            ${renderChips(item.matched_keywords || [])}
+          </div>
+        </div>
+
+        <div class="card-solid">
+          <div class="section-head" style="margin-top:0;">
+            <div>
+              <h2>Hae liitteestä</h2>
+              <p>Etsi tarkka osuma liitetiedoston tekstistä</p>
+            </div>
+          </div>
+
+          <div class="search-box">
+            <input id="pdfQuery" class="input" placeholder="Kirjoita hakusana" />
+            <button id="pdfSearchBtn" class="button">Hae</button>
+          </div>
+
+          <div id="pdfSearchResults" class="search-results-inline" style="margin-top:14px;">
+            Syötä hakusana ja paina Hae.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="side-stack">
+
+        ${item.snippet_image ? `
+          <div class="card">
+            <div class="section-head" style="margin-top:0;">
+              <div>
+                <h2>Kohta liitteessä</h2>
+                <p>Poiminnan visuaalinen osuma</p>
+              </div>
+            </div>
+
+            <div class="snippet-frame">
+              <img src="${esc(item.snippet_image)}?v=${Date.now()}" alt="Osumakuva liitteestä" />
+            </div>
+
+            ${item.snippet_page ? `
+              <div class="results-meta" style="margin-top:10px;">
+                Sivu ${esc(item.snippet_page)}
+              </div>
+            ` : ""}
+          </div>
+        ` : ""}
+
+        ${children.length ? `
+          <div class="card">
+            <div class="section-head" style="margin-top:0;">
+              <div>
+                <h2>Samasta liitteestä poimitut</h2>
+                <p>Muut löydökset tästä lähteestä</p>
+              </div>
+            </div>
+
+            <div class="mini-list">
+              ${children.map(child => `
+                <div class="mini-item">
+                  <h4><a href="detail.html?id=${encodeURIComponent(child.id || child.url)}">${esc(child.title)}</a></h4>
+                  <p>${esc(child.estimated_budget_value || "-")} · ${esc(child.item_type || "-")}</p>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ""}
+
+        <div class="card">
+          <div class="section-head" style="margin-top:0;">
+            <div>
+              <h2>Samankaltaiset hankinnat</h2>
+              <p>Läheiset osumat datasta</p>
+            </div>
+          </div>
+
+          <div class="mini-list">
+            ${similar.length ? similar.map(rel => `
+              <div class="mini-item">
+                <h4><a href="detail.html?id=${encodeURIComponent(rel.id || rel.url)}">${esc(rel.title)}</a></h4>
+                <p>${esc(rel.entity || "-")} · ${esc(rel.item_type || "-")}</p>
+              </div>
+            `).join("") : `<div class="empty-state">Ei samankaltaisia kohteita.</div>`}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
   `;
 
-});
+  const btn = document.getElementById("pdfSearchBtn");
+  const input = document.getElementById("pdfQuery");
+  const out = document.getElementById("pdfSearchResults");
 
+  btn.onclick = () => {
+    const query = input.value.trim();
+    if (!query) {
+      out.innerHTML = "Kirjoita ensin hakusana.";
+      return;
+    }
+    out.innerHTML = makePdfSnippets(item.pdf_text || "", query);
+  };
+});
 </script>
 </body>
 </html>
